@@ -41,10 +41,25 @@ export default async function ProductoGridItems({
               prefetch={true}
             >
               <GridTileImage
-                alt={traducirCampo(producto.slug, "titulo", producto.titulo, lang)}
-                badge={ <StatusBadge status={producto.status} stock={producto.stock} />}
+                alt={traducirCampo(
+                  producto.slug,
+                  "titulo",
+                  producto.titulo,
+                  lang,
+                )}
+                badge={
+                  <StatusBadge
+                    status={producto.status}
+                    stock={producto.stock}
+                  />
+                }
                 label={{
-                  title: traducirCampo(producto.slug, "titulo", producto.titulo, lang),
+                  title: traducirCampo(
+                    producto.slug,
+                    "titulo",
+                    producto.titulo,
+                    lang,
+                  ),
                   amount: producto.precio.toString(),
                   currencyCode: "EUR",
                 }}

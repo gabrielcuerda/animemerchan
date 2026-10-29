@@ -4,6 +4,7 @@ import { enviarFactura } from "@/lib/email/enviar-factura";
 import { getStripe, getStripeWebhookSecret } from "@/lib/stripe";
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
+import { enviarPedidoIntegracion } from "@/lib/integracion/enviar-integracion";
 
 /**
  * Webhook de Stripe.
@@ -108,7 +109,9 @@ export async function POST(req: NextRequest) {
       } catch (error) {
         console.error("[stripe] Error enviando la factura:", error);
       }
-
+      // Integración con el back-office. Igual que la factura: su
+      // fallo no puede hacer que Stripe reintente un pedido ya creado.
+      await enviarPedidoIntegracion(session.id, email);
       break;
     }
 

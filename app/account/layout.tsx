@@ -37,18 +37,26 @@ export default async function AccountLayout({
       { onConflict: "id" },
     );
   }
-  
-    const lang = await getLang();
-    const accountLinks = [
-      { href: "/account", label: translate(lang, "account.tab.overview") },
-      { href: "/account/profile", label: translate(lang, "account.tab.profile") },
-      { href: "/account/addresses", label: translate(lang, "account.tab.addresses") },
-      { href: "/account/orders", label: translate(lang, "account.tab.orders") },
-      { href: "/account/wishlist", label: translate(lang, "account.tab.wishlist") },
-    ];
+
+  const lang = await getLang();
+  const accountLinks = [
+    { href: "/account", label: translate(lang, "account.tab.overview") },
+    { href: "/account/profile", label: translate(lang, "account.tab.profile") },
+    {
+      href: "/account/addresses",
+      label: translate(lang, "account.tab.addresses"),
+    },
+    { href: "/account/orders", label: translate(lang, "account.tab.orders") },
+    {
+      href: "/account/wishlist",
+      label: translate(lang, "account.tab.wishlist"),
+    },
+  ];
 
   const fullName =
-    profile?.full_nombre ?? user.user_metadata?.full_nombre ?? translate(lang, "account.guest");
+    profile?.full_nombre ??
+    user.user_metadata?.full_nombre ??
+    translate(lang, "account.guest");
 
   return (
     <div className="mx-auto min-h-[70vh] w-full max-w-6xl px-4 py-10 lg:px-6">

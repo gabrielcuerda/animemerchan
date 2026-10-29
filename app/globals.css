@@ -174,7 +174,6 @@
 }
 
 @layer components {
-
   /* Contenedor de página: mismo ancho en toda la tienda */
   .page-container {
     @apply mx-auto w-full max-w-(--breakpoint-2xl) px-4 lg:px-6;
@@ -198,16 +197,20 @@
 /* Fundido de los bordes en las tiras en bucle (marquesinas) para que el
    texto no aparezca cortado en seco contra el borde del contenedor. */
 @utility marquee-fade {
-  -webkit-mask-image: linear-gradient(to right,
-      transparent,
-      #000 48px,
-      #000 calc(100% - 48px),
-      transparent);
-  mask-image: linear-gradient(to right,
-      transparent,
-      #000 48px,
-      #000 calc(100% - 48px),
-      transparent);
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 48px,
+    #000 calc(100% - 48px),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 48px,
+    #000 calc(100% - 48px),
+    transparent
+  );
 }
 
 /* Foco visible coherente con la paleta de marca */

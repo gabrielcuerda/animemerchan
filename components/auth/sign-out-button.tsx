@@ -11,7 +11,11 @@ export default function SignOutButton() {
   const [loading, setLoading] = useState(false);
   const { lang } = useLanguage();
 
-  {loading ? translate(lang, "auth.signingOut") : translate(lang, "auth.signOut")}
+  {
+    loading
+      ? translate(lang, "auth.signingOut")
+      : translate(lang, "auth.signOut");
+  }
 
   async function handleSignOut() {
     setLoading(true);

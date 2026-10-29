@@ -162,7 +162,11 @@ export default async function ProductPage(props: {
 
           <div className="basis-full lg:basis-2/6">
             <Suspense fallback={null}>
-              <ProductDescription product={product} saved={guardado} lang={lang} />
+              <ProductDescription
+                product={product}
+                saved={guardado}
+                lang={lang}
+              />
             </Suspense>
           </div>
         </div>

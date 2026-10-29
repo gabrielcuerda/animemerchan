@@ -20,8 +20,16 @@ export type CategoriaDestacada = Categoria & {
 };
 
 const TAGS_ROPA = new Set([
-  "ropa", "camiseta", "camisetas", "sudadera", "pantalon",
-  "hoodie", "apparel", "tshirt", "t-shirt", "playera",
+  "ropa",
+  "camiseta",
+  "camisetas",
+  "sudadera",
+  "pantalon",
+  "hoodie",
+  "apparel",
+  "tshirt",
+  "t-shirt",
+  "playera",
 ]);
 
 const esRopa = (p: { tags: string[] | null }) =>
@@ -34,7 +42,7 @@ export async function getCategoriasDestacadas(): Promise<CategoriaDestacada[]> {
   // Las dos consultas van a la vez: no hay por qué esperar a la primera
   const [categorias, productos] = await Promise.all([
     getCategorias(),
-    supabase.from('productos').select('categoria_id, status, tags'),
+    supabase.from("productos").select("categoria_id, status, tags"),
   ]);
 
   if (productos.error) throw productos.error;
@@ -59,7 +67,7 @@ export async function getCategoriasDestacadas(): Promise<CategoriaDestacada[]> {
     return {
       ...categoria,
       totalProductos: propias.length,
-      totalOfertas: propias.filter((p) => p.status === 'oferta').length,
+      totalOfertas: propias.filter((p) => p.status === "oferta").length,
       tipo,
     };
   });

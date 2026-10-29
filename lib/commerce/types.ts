@@ -1,6 +1,5 @@
 import type { Producto } from "@/lib/db/types";
 
-
 export type Money = {
   amount: string;
   currencyCode: string;

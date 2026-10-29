@@ -18,7 +18,7 @@ export function Gallery({
     ? parseInt(searchParams.get("image")!)
     : 0;
   const { lang } = useLanguage();
-  
+
   const updateImage = (index: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("image", index);

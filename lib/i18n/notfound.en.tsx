@@ -20,8 +20,8 @@ export function NotFoundEn({ categorias }: { categorias: Categoria[] }) {
       </h1>
 
       <p className="mt-3 max-w-lg text-sm text-slate-600 sm:text-base">
-        The figure may have sold out and been removed from the catalogue, or
-        the address may be mistyped.
+        The figure may have sold out and been removed from the catalogue, or the
+        address may be mistyped.
       </p>
 
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
