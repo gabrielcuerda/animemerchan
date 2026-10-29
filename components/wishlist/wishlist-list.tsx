@@ -22,7 +22,7 @@ export default async function WishlistList({
   const items = await getWishlistProductos(userId);
   const productos = items.map((item) => item.productos);
   const wishlistProductIds = items.map((item) => item.producto_id);
-  
+
   return (
     <section>
       <div className="mb-6">

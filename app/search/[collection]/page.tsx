@@ -84,8 +84,14 @@ export default async function CategoryPage(props: {
   return (
     <section>
       <header className="relative mb-6 overflow-hidden rounded-xl bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 px-6 py-8 text-white shadow-sm sm:px-8 sm:py-10">
-        <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
-        <div aria-hidden="true" className="pointer-events-none absolute -bottom-20 left-8 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-12 -top-16 h-48 w-48 rounded-full bg-white/10 blur-2xl"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-20 left-8 h-40 w-40 rounded-full bg-white/10 blur-2xl"
+        />
 
         <div className="relative">
           <Breadcrumb nombre={categoria.nombre} />
@@ -95,7 +101,9 @@ export default async function CategoryPage(props: {
               <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl">
                 {categoria.nombre}
               </h1>
-              <p className="mt-2 max-w-2xl text-sm text-blue-100 sm:text-base">{descripcion}</p>
+              <p className="mt-2 max-w-2xl text-sm text-blue-100 sm:text-base">
+                {descripcion}
+              </p>
             </div>
 
             <span className="shrink-0 rounded-full bg-white/15 px-4 py-2 text-sm font-medium backdrop-blur">
@@ -113,7 +121,10 @@ export default async function CategoryPage(props: {
               : "No hay productos en esta categoría"}
           </p>
           {estado || precio ? (
-            <Link href={`/search/${params.collection}`} className="text-sm text-blue-600 underline underline-offset-4 hover:opacity-80">
+            <Link
+              href={`/search/${params.collection}`}
+              className="text-sm text-blue-600 underline underline-offset-4 hover:opacity-80"
+            >
               Limpiar filtros
             </Link>
           ) : null}

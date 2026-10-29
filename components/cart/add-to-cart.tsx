@@ -128,7 +128,7 @@ export function AddToCart({ product }: { product: Product }) {
   useEffect(() => {
     if (!result) return;
     if (result.ok) {
-      toast.success(translate(lang, "cart.added"))
+      toast.success(translate(lang, "cart.added"));
     } else {
       toast.error(result.error ?? translate(lang, "cart.addError"));
     }

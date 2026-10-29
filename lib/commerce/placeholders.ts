@@ -106,13 +106,13 @@ const pages: Record<string, Page> = {
 <h2>Tiempo de respuesta</h2>
 <p>Respondemos todos los mensajes en un máximo de 24 horas laborables. Si tu mensaje entra antes de las 14:00 de un día laborable, lo respondemos el mismo día.</p>`,
     bodySummary:
-        "Email, teléfono, horario y dirección de atención al cliente de Animemerchan.",
+      "Email, teléfono, horario y dirección de atención al cliente de Animemerchan.",
     createdAt: "2024-01-01T00:00:00.000Z",
     updatedAt: "2025-02-18T00:00:00.000Z",
     seo: {
       title: "Contacto",
       description:
-      "Email, teléfono, horario y dirección de atención al cliente de Animemerchan.",
+        "Email, teléfono, horario y dirección de atención al cliente de Animemerchan.",
     },
   },
 

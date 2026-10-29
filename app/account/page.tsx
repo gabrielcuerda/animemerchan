@@ -16,10 +16,26 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function AccountPage() {
   const lang = await getLang();
   const accountCards = [
-  { href: "/account/profile", title: translate(lang, "account.card.profile"), description: translate(lang, "account.card.profileDesc") },
-  { href: "/account/addresses", title: translate(lang, "account.card.addresses"), description: translate(lang, "account.card.addressesDesc") },
-  { href: "/account/orders", title: translate(lang, "account.card.orders"), description: translate(lang, "account.card.ordersDesc") },
-  { href: "/account/wishlist", title: translate(lang, "account.card.wishlist"), description: translate(lang, "account.card.wishlistDesc") },
+    {
+      href: "/account/profile",
+      title: translate(lang, "account.card.profile"),
+      description: translate(lang, "account.card.profileDesc"),
+    },
+    {
+      href: "/account/addresses",
+      title: translate(lang, "account.card.addresses"),
+      description: translate(lang, "account.card.addressesDesc"),
+    },
+    {
+      href: "/account/orders",
+      title: translate(lang, "account.card.orders"),
+      description: translate(lang, "account.card.ordersDesc"),
+    },
+    {
+      href: "/account/wishlist",
+      title: translate(lang, "account.card.wishlist"),
+      description: translate(lang, "account.card.wishlistDesc"),
+    },
   ];
   const supabase = await createClient();
   const {
@@ -38,9 +54,15 @@ export default async function AccountPage() {
   return (
     <section>
       <div className="mb-6">
-        <h2 className="text-xl font-bold">{translate(lang, "account.summaryTitle")}</h2>
+        <h2 className="text-xl font-bold">
+          {translate(lang, "account.summaryTitle")}
+        </h2>
         <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-          {translate(lang, "account.summaryDesc")} {orderCount} {translate(lang, orderCount === 1 ? "account.orderOne" : "account.orderOther")}
+          {translate(lang, "account.summaryDesc")} {orderCount}{" "}
+          {translate(
+            lang,
+            orderCount === 1 ? "account.orderOne" : "account.orderOther",
+          )}
         </p>
       </div>
 

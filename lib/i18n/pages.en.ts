@@ -67,13 +67,13 @@ const pagesEn: Record<string, Page> = {
 <h2>Response time</h2>
 <p>We reply to every message within 24 working hours. If your message arrives before 14:00 on a working day, we reply the same day.</p>`,
     bodySummary:
-        "Email, phone, opening hours and customer service address for Animemerchan.",
+      "Email, phone, opening hours and customer service address for Animemerchan.",
     createdAt: "2024-01-01T00:00:00.000Z",
     updatedAt: "2025-02-18T00:00:00.000Z",
     seo: {
       title: "Contact",
       description:
-      "Email, phone, opening hours and customer service address for Animemerchan.",
+        "Email, phone, opening hours and customer service address for Animemerchan.",
     },
   },
 

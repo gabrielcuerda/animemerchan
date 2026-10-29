@@ -320,11 +320,15 @@ export default function AuthForm({
             type="submit"
             disabled={loading}
           >
-            {loading ? translate(lang, "auth.loading")
-              : mode === "login" ? translate(lang, "auth.submitLogin")
-              : mode === "register" ? translate(lang, "auth.submitRegister")
-              : mode === "forgot-password" ? translate(lang, "auth.submitForgot")
-              : translate(lang, "auth.submitReset")}
+            {loading
+              ? translate(lang, "auth.loading")
+              : mode === "login"
+                ? translate(lang, "auth.submitLogin")
+                : mode === "register"
+                  ? translate(lang, "auth.submitRegister")
+                  : mode === "forgot-password"
+                    ? translate(lang, "auth.submitForgot")
+                    : translate(lang, "auth.submitReset")}
           </button>
         </form>
 

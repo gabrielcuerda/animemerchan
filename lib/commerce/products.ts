@@ -159,7 +159,11 @@ export async function getProductRecommendations(
     .slice(0, 4)
     .map((producto) =>
       mapProduct(
-        { ...producto, producto_variantes: [], categorias: null } as ProductoConDetalle,
+        {
+          ...producto,
+          producto_variantes: [],
+          categorias: null,
+        } as ProductoConDetalle,
         lang,
       ),
     );

@@ -24,25 +24,25 @@ export default async function SearchLayout({
         </Suspense>
       </div>
       <div className="order-none flex-none md:order-last md:w-[220px]">
+        <FilterList
+          list={traducirFiltros(lang, sorting)}
+          title={translate(lang, "search.sortTitle")}
+        />
+
+        <div className="mt-6">
           <FilterList
-            list={traducirFiltros(lang, sorting)}
-            title={translate(lang, "search.sortTitle")}
+            list={traducirFiltros(lang, estados)}
+            title={translate(lang, "search.statusTitle")}
           />
-
-          <div className="mt-6">
-            <FilterList
-              list={traducirFiltros(lang, estados)}
-              title={translate(lang, "search.statusTitle")}
-            />
-          </div>
-
-          <div className="mt-6">
-            <FilterList
-              list={traducirFiltros(lang, precios)}
-              title={translate(lang, "search.priceTitle")}
-            />
-          </div>
         </div>
+
+        <div className="mt-6">
+          <FilterList
+            list={traducirFiltros(lang, precios)}
+            title={translate(lang, "search.priceTitle")}
+          />
+        </div>
+      </div>
     </div>
   );
 }

@@ -77,7 +77,10 @@ function ParamFilterItem({ item }: { item: ParamFilterItem }) {
   const href = createUrl(pathname, newParams);
 
   return (
-    <li className="mt-2 flex text-sm text-black dark:text-white" key={item.title}>
+    <li
+      className="mt-2 flex text-sm text-black dark:text-white"
+      key={item.title}
+    >
       <Link
         href={href}
         prefetch={false}

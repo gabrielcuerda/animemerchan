@@ -26,14 +26,23 @@ function disponibilidad(
       clase: "text-sky-600",
     };
   if (product.stock <= 0)
-    return { texto: translate(lang, "product.agotado"), clase: "text-rose-600" };
+    return {
+      texto: translate(lang, "product.agotado"),
+      clase: "text-rose-600",
+    };
   if (product.stock <= 5)
     return {
-      texto: translate(lang, "product.pocas").replace("{n}", String(product.stock)),
+      texto: translate(lang, "product.pocas").replace(
+        "{n}",
+        String(product.stock),
+      ),
       clase: "text-orange-600",
     };
   return {
-    texto: translate(lang, "product.stock").replace("{n}", String(product.stock)),
+    texto: translate(lang, "product.stock").replace(
+      "{n}",
+      String(product.stock),
+    ),
     clase: "text-emerald-600",
   };
 }
@@ -51,7 +60,6 @@ export function ProductDescription({
 
   return (
     <div className="relative">
-
       <div className="mb-6 flex flex-col border-b pb-6 dark:border-neutral-700">
         <h1 className="mb-3 text-5xl font-medium">{product.title}</h1>
 

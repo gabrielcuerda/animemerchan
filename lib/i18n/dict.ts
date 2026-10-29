@@ -161,7 +161,7 @@ const es = {
   "search.showing": "Mostrando",
   "search.forQuery": " para ",
   "search.noMatches": "No hay productos que coincidan con los filtros.",
-  "search.clearFilters": "Limpiar filtros",  
+  "search.clearFilters": "Limpiar filtros",
 
   // ── Navbar ──
   "nav.homeLink": "Inicio",
@@ -237,9 +237,12 @@ const es = {
   "auth.minLength": "La contraseña debe tener al menos 8 caracteres.",
   "auth.mismatch": "Las contraseñas no coinciden.",
   "auth.loginError": "No hemos podido iniciar sesión. Revisa tus datos.",
-  "auth.registered": "Te hemos enviado un correo para confirmar tu cuenta. Revisa tu bandeja de entrada.",
-  "auth.resetSent": "Si el correo existe, recibirás un enlace para recuperar tu contraseña.",
-  "auth.updateError": "No hemos podido actualizar la contraseña. Solicita un nuevo enlace e inténtalo de nuevo.",
+  "auth.registered":
+    "Te hemos enviado un correo para confirmar tu cuenta. Revisa tu bandeja de entrada.",
+  "auth.resetSent":
+    "Si el correo existe, recibirás un enlace para recuperar tu contraseña.",
+  "auth.updateError":
+    "No hemos podido actualizar la contraseña. Solicita un nuevo enlace e inténtalo de nuevo.",
   "auth.updated": "Contraseña actualizada. Redirigiendo a tu cuenta...",
   "auth.unexpected": "Ha ocurrido un error inesperado. Inténtalo de nuevo.",
   "auth.signOut": "Cerrar sesión",
@@ -247,23 +250,30 @@ const es = {
   // ── Auth: errores de Supabase ──
   "auth.err.invalid_credentials": "El correo o la contraseña no son correctos.",
   "auth.err.user_not_found": "No existe ninguna cuenta con ese correo.",
-  "auth.err.email_not_confirmed": "Tu correo todavía no está confirmado. Revisa tu bandeja de entrada.",
-  "auth.err.user_already_exists": "Ya existe una cuenta con ese correo electrónico.",
+  "auth.err.email_not_confirmed":
+    "Tu correo todavía no está confirmado. Revisa tu bandeja de entrada.",
+  "auth.err.user_already_exists":
+    "Ya existe una cuenta con ese correo electrónico.",
   "auth.err.email_exists": "Ya existe una cuenta con ese correo electrónico.",
   "auth.err.email_address_invalid": "El correo electrónico no es válido.",
-  "auth.err.email_address_not_authorized": "Ese dominio de correo no está autorizado.",
+  "auth.err.email_address_not_authorized":
+    "Ese dominio de correo no está autorizado.",
   "auth.err.weak_password": "La contraseña es demasiado débil.",
-  "auth.err.same_password": "La contraseña nueva tiene que ser distinta a la anterior.",
+  "auth.err.same_password":
+    "La contraseña nueva tiene que ser distinta a la anterior.",
   "auth.err.signup_disabled": "El registro está deshabilitado temporalmente.",
-  "auth.err.over_email_send_rate_limit": "Hemos enviado demasiados correos en poco tiempo. Vuelve a intentarlo en unos minutos.",
-  "auth.err.over_request_rate_limit": "Demasiados intentos seguidos. Espera unos minutos y vuelve a probar.",
+  "auth.err.over_email_send_rate_limit":
+    "Hemos enviado demasiados correos en poco tiempo. Vuelve a intentarlo en unos minutos.",
+  "auth.err.over_request_rate_limit":
+    "Demasiados intentos seguidos. Espera unos minutos y vuelve a probar.",
   // ── Wishlist ──
   "wishlist.metaTitle": "Lista de deseos",
   "wishlist.metaDescription": "Guarda tus productos favoritos.",
   "wishlist.accountTitle": "Mis deseos",
   "wishlist.accountDesc": "Consulta tus productos favoritos.",
   "wishlist.empty": "Tu lista está vacía.",
-  "wishlist.emptyHint": "Pulsa el corazón de cualquier producto para guardarlo aquí.",
+  "wishlist.emptyHint":
+    "Pulsa el corazón de cualquier producto para guardarlo aquí.",
   "wishlist.explore": "Explorar productos",
   // ── Cuenta ──
   "account.metaTitle": "Mi cuenta",
@@ -277,7 +287,8 @@ const es = {
   "account.tab.orders": "Pedidos",
   "account.tab.wishlist": "Deseos",
   "account.summaryTitle": "Resumen de tu cuenta",
-  "account.summaryDesc": "Gestiona tus datos, direcciones y compras desde aquí.",
+  "account.summaryDesc":
+    "Gestiona tus datos, direcciones y compras desde aquí.",
   "account.card.profile": "Perfil",
   "account.card.profileDesc": "Actualiza tu nombre y teléfono.",
   "account.card.addresses": "Direcciones",
@@ -288,7 +299,6 @@ const es = {
   "account.card.wishlistDesc": "Consulta tus productos favoritos.",
   "account.orderOne": "pedido",
   "account.orderOther": "pedidos",
-
 } as const;
 
 export type DictKey = keyof typeof es;
@@ -433,7 +443,7 @@ const en: Record<DictKey, string> = {
   "gallery.prev": "Previous image",
   "gallery.next": "Next image",
   "gallery.select": "Select product image",
-  
+
   // Filters and search
   "search.sortTitle": "Sort by",
   "search.statusTitle": "Status",
@@ -452,7 +462,7 @@ const en: Record<DictKey, string> = {
   "search.showing": "Showing",
   "search.forQuery": " for ",
   "search.noMatches": "No products match the filters.",
-  "search.clearFilters": "Clear filters",  
+  "search.clearFilters": "Clear filters",
 
   // Navbar
   "nav.homeLink": "Home",
@@ -528,9 +538,12 @@ const en: Record<DictKey, string> = {
   "auth.minLength": "Password must be at least 8 characters.",
   "auth.mismatch": "Passwords do not match.",
   "auth.loginError": "Could not sign in. Check your details.",
-  "auth.registered": "We sent you an email to confirm your account. Check your inbox.",
-  "auth.resetSent": "If the email exists, you will receive a link to reset your password.",
-  "auth.updateError": "Could not update your password. Request a new link and try again.",
+  "auth.registered":
+    "We sent you an email to confirm your account. Check your inbox.",
+  "auth.resetSent":
+    "If the email exists, you will receive a link to reset your password.",
+  "auth.updateError":
+    "Could not update your password. Request a new link and try again.",
   "auth.updated": "Password updated. Redirecting to your account...",
   "auth.unexpected": "Something went wrong. Try again.",
   "auth.signOut": "Sign out",
@@ -538,16 +551,20 @@ const en: Record<DictKey, string> = {
   // ── Auth: Supabase errors ──
   "auth.err.invalid_credentials": "Email or password is incorrect.",
   "auth.err.user_not_found": "No account exists with that email.",
-  "auth.err.email_not_confirmed": "Your email is not confirmed yet. Check your inbox.",
+  "auth.err.email_not_confirmed":
+    "Your email is not confirmed yet. Check your inbox.",
   "auth.err.user_already_exists": "An account with that email already exists.",
   "auth.err.email_exists": "An account with that email already exists.",
   "auth.err.email_address_invalid": "The email address is not valid.",
-  "auth.err.email_address_not_authorized": "That email domain is not authorized.",
+  "auth.err.email_address_not_authorized":
+    "That email domain is not authorized.",
   "auth.err.weak_password": "The password is too weak.",
   "auth.err.same_password": "The new password must be different.",
   "auth.err.signup_disabled": "Registration is temporarily disabled.",
-  "auth.err.over_email_send_rate_limit": "We sent too many emails in a short time. Try again in a few minutes.",
-  "auth.err.over_request_rate_limit": "Too many attempts in a row. Wait a few minutes and try again.",
+  "auth.err.over_email_send_rate_limit":
+    "We sent too many emails in a short time. Try again in a few minutes.",
+  "auth.err.over_request_rate_limit":
+    "Too many attempts in a row. Wait a few minutes and try again.",
   // ── Wishlist ──
   "wishlist.metaTitle": "Wishlist",
   "wishlist.metaDescription": "Save your favourite products.",
@@ -579,10 +596,9 @@ const en: Record<DictKey, string> = {
   "account.card.wishlistDesc": "Browse your favourite products.",
   "account.orderOne": "order",
   "account.orderOther": "orders",
-  
 };
 
-export const dict: Record<Lang, Record<DictKey, string>> = { es, en};
+export const dict: Record<Lang, Record<DictKey, string>> = { es, en };
 
 export function translate(lang: Lang, key: string): string {
   const k = key as DictKey;

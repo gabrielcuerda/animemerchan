@@ -24,5 +24,11 @@ export default async function AccountWishlistPage() {
   }
 
   const lang = await getLang();
-  return <WishlistList userId={user.id} title={translate(lang, "wishlist.accountTitle")} description={translate(lang, "wishlist.accountDesc")} />;
+  return (
+    <WishlistList
+      userId={user.id}
+      title={translate(lang, "wishlist.accountTitle")}
+      description={translate(lang, "wishlist.accountDesc")}
+    />
+  );
 }

@@ -41,11 +41,11 @@ export async function getProductos({
   estado,
   precio,
 }: {
-  query?: string
-  sortKey?: string
-  reverse?: boolean
-  estado?: string
-  precio?: string
+  query?: string;
+  sortKey?: string;
+  reverse?: boolean;
+  estado?: string;
+  precio?: string;
 } = {}) {
   let queryBuilder = supabase
     .from("productos")
@@ -58,16 +58,16 @@ export async function getProductos({
   }
 
   if (estado && ESTADOS_VALIDOS.includes(estado)) {
-    queryBuilder = queryBuilder.eq('status', estado)
+    queryBuilder = queryBuilder.eq("status", estado);
   }
 
   if (precio) {
-    const { min, max } = parseRangoPrecio(precio)
-    if (min !== undefined) queryBuilder = queryBuilder.gte('precio', min)
-    if (max !== undefined) queryBuilder = queryBuilder.lte('precio', max)
+    const { min, max } = parseRangoPrecio(precio);
+    if (min !== undefined) queryBuilder = queryBuilder.gte("precio", min);
+    if (max !== undefined) queryBuilder = queryBuilder.lte("precio", max);
   }
 
-  queryBuilder = orderProductos(queryBuilder, sortKey, reverse)
+  queryBuilder = orderProductos(queryBuilder, sortKey, reverse);
 
   const { data, error } = await queryBuilder.limit(100);
 
@@ -77,19 +77,19 @@ export async function getProductos({
 
 export async function getProducto(slug: string) {
   const { data, error } = await supabase
-    .from('productos')
+    .from("productos")
     .select(
-      '*, producto_imagenes(*, orden_cat), producto_variantes(*), categorias(nombre, slug)'
+      "*, producto_imagenes(*, orden_cat), producto_variantes(*), categorias(nombre, slug)",
     )
-    .eq('slug', slug)
-    .single()
+    .eq("slug", slug)
+    .single();
 
   if (error) return null;
   return data as Producto & {
-    producto_imagenes: ProductoImagen[]
-    producto_variantes: import('./types').ProductoVariante[]
-    categorias: { nombre: string; slug: string } | null
-  }
+    producto_imagenes: ProductoImagen[];
+    producto_variantes: import("./types").ProductoVariante[];
+    categorias: { nombre: string; slug: string } | null;
+  };
 }
 
 export async function getProductosByCategoria(
@@ -100,11 +100,11 @@ export async function getProductosByCategoria(
     estado,
     precio,
   }: {
-    sortKey?: string
-    reverse?: boolean
-    estado?: string
-    precio?: string
-  } = {}
+    sortKey?: string;
+    reverse?: boolean;
+    estado?: string;
+    precio?: string;
+  } = {},
 ) {
   let queryBuilder = supabase
     .from("productos")
@@ -112,16 +112,16 @@ export async function getProductosByCategoria(
     .eq("categorias.slug", categoriaSlug);
 
   if (estado && ESTADOS_VALIDOS.includes(estado)) {
-    queryBuilder = queryBuilder.eq('status', estado)
+    queryBuilder = queryBuilder.eq("status", estado);
   }
 
   if (precio) {
-    const { min, max } = parseRangoPrecio(precio)
-    if (min !== undefined) queryBuilder = queryBuilder.gte('precio', min)
-    if (max !== undefined) queryBuilder = queryBuilder.lte('precio', max)
+    const { min, max } = parseRangoPrecio(precio);
+    if (min !== undefined) queryBuilder = queryBuilder.gte("precio", min);
+    if (max !== undefined) queryBuilder = queryBuilder.lte("precio", max);
   }
 
-  queryBuilder = orderProductos(queryBuilder, sortKey, reverse)
+  queryBuilder = orderProductos(queryBuilder, sortKey, reverse);
 
   const { data, error } = await queryBuilder;
 

@@ -23,10 +23,12 @@ export default async function SearchPage(props: {
   const searchParams = await props.searchParams;
   const lang = await getLang();
   const t = (k: string) => translate(lang, k);
-  const { sort, q: searchValue, estado, precio } = searchParams as Record<
-    string,
-    string
-  >;
+  const {
+    sort,
+    q: searchValue,
+    estado,
+    precio,
+  } = searchParams as Record<string, string>;
   const { sortKey, reverse } =
     sorting.find((item) => item.slug === sort) || defaultSort;
 
@@ -34,13 +36,14 @@ export default async function SearchPage(props: {
     sortKey,
     reverse,
     query: searchValue,
-     estado,
+    estado,
     precio,
   });
 
   const hayFiltros = Boolean(searchValue || estado || precio);
   const total = productos.length;
-  const resultsText = total === 1 ? t("search.resultsOne") : t("search.resultsOther");
+  const resultsText =
+    total === 1 ? t("search.resultsOne") : t("search.resultsOther");
 
   const limpiarHref = createUrl(
     "/search",

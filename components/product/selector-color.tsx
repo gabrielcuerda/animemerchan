@@ -5,13 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { translate, type Lang } from "@/lib/i18n/dict";
 import { COLORES_POR_PRODUCTO } from "@/lib/commerce/colores-producto";
 
-export function SelectorColor({
-  slug,
-  lang,
-}: {
-  slug: string;
-  lang: Lang;
-}) {
+export function SelectorColor({ slug, lang }: { slug: string; lang: Lang }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const colores = COLORES_POR_PRODUCTO[slug];
@@ -54,7 +48,7 @@ export function SelectorColor({
           );
         })}
       </div>
-        <p
+      <p
         aria-live="polite"
         className="mt-3 text-sm font-medium text-neutral-700 dark:text-neutral-300"
       >

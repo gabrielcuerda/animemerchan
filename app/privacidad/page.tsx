@@ -55,16 +55,9 @@ function PoliticaPrivacidadEs() {
             1. Responsable del tratamiento
           </h2>
           <ul className="flex flex-col gap-1">
-            <Dato termino="Nombre comercial">
-              {"Animemerchan S.L. "}
-              
-            </Dato>
-            <Dato termino="CIF / NIF">
-              12341234X
-            </Dato>
-            <Dato termino="Domicilio fiscal">
-              C/ Jerez de la Cueva
-            </Dato>
+            <Dato termino="Nombre comercial">{"Animemerchan S.L. "}</Dato>
+            <Dato termino="CIF / NIF">12341234X</Dato>
+            <Dato termino="Domicilio fiscal">C/ Jerez de la Cueva</Dato>
             <Dato termino="Domicilio comercial">{siteConfig.address}</Dato>
             <Dato termino="Correo electrónico">
               <a
@@ -77,7 +70,7 @@ function PoliticaPrivacidadEs() {
             <Dato termino="Teléfono">{siteConfig.phone}</Dato>
             <Dato termino="Horario de atención">{siteConfig.schedule}</Dato>
             <Dato termino="Registro en la AEPD">
-              Dirección de la Agencia Española de Protección de Datos 
+              Dirección de la Agencia Española de Protección de Datos
             </Dato>
             <Dato termino="Delegado de protección de datos">
               Gerónimo Ferrández Martínez
@@ -387,8 +380,8 @@ function PoliticaPrivacidadEs() {
             </li>
             <li>Dirección: Calle de Jorge Juan, 6, 28001 Madrid.</li>
             <li>
-              Nuestra inscripción:{" "}
-              Dirección de la Agencia Española de Protección de Datos 
+              Nuestra inscripción: Dirección de la Agencia Española de
+              Protección de Datos
             </li>
           </ul>
         </section>

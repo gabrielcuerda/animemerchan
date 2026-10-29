@@ -58,7 +58,9 @@ export function PrivacidadEn() {
             </Dato>
             <Dato termino="Phone">{siteConfig.phone}</Dato>
             <Dato termino="Support hours">{SCHEDULE}</Dato>
-            <Dato termino="AEPD registration">Spanish Data Protection Agency</Dato>
+            <Dato termino="AEPD registration">
+              Spanish Data Protection Agency
+            </Dato>
             <Dato termino="Data protection officer">
               Gerónimo Ferrández Martínez
             </Dato>
@@ -75,10 +77,10 @@ export function PrivacidadEn() {
           <div className="flex flex-col gap-3">
             <ul className="flex flex-col gap-1">
               <li>
-                <strong className="text-ink-900">Account data:</strong>{" "}
-                email address, name, phone number and password. The password is
-                stored encrypted and is never accessible, not to us nor to
-                anyone with access to the database.
+                <strong className="text-ink-900">Account data:</strong> email
+                address, name, phone number and password. The password is stored
+                encrypted and is never accessible, not to us nor to anyone with
+                access to the database.
               </li>
               <li>
                 <strong className="text-ink-900">Shipping address:</strong>{" "}
@@ -86,12 +88,12 @@ export function PrivacidadEn() {
                 recipient&apos;s name and phone number.
               </li>
               <li>
-                <strong className="text-ink-900">Purchase data:</strong>{" "}
-                ordered products, amounts, shipping address and order status.
+                <strong className="text-ink-900">Purchase data:</strong> ordered
+                products, amounts, shipping address and order status.
               </li>
               <li>
-                <strong className="text-ink-900">Payment data:</strong>{" "}
-                only the transaction identifier, the amount and the method.{" "}
+                <strong className="text-ink-900">Payment data:</strong> only the
+                transaction identifier, the amount and the method.{" "}
                 <strong className="text-ink-900">
                   We do not store your full card details
                 </strong>
@@ -99,8 +101,8 @@ export function PrivacidadEn() {
                 which is certified under the PCI DSS standard.
               </li>
               <li>
-                <strong className="text-ink-900">Wishlist:</strong> the
-                products you save and when you saved them.
+                <strong className="text-ink-900">Wishlist:</strong> the products
+                you save and when you saved them.
               </li>
               <li>
                 <strong className="text-ink-900">
@@ -214,8 +216,8 @@ export function PrivacidadEn() {
             />
           </ul>
           <p className="mt-3 text-sm text-ink-500">
-            If we add a shipping company in the future, we will update this
-            list before their service is used.
+            If we add a shipping company in the future, we will update this list
+            before their service is used.
           </p>
         </section>
 
@@ -325,8 +327,8 @@ export function PrivacidadEn() {
               >
                 {siteConfig.email}
               </a>{" "}
-              stating which right you want to exercise and the affected
-              account. We reply within one month at the latest.
+              stating which right you want to exercise and the affected account.
+              We reply within one month at the latest.
             </p>
             <p className="mt-2 text-sm">
               You can also do it{" "}
@@ -422,13 +424,7 @@ export function PrivacidadEn() {
 
 /* ── Helpers (espejo de los de page.tsx) ── */
 
-function Dato({
-  termino,
-  children,
-}: {
-  termino: string;
-  children: ReactNode;
-}) {
+function Dato({ termino, children }: { termino: string; children: ReactNode }) {
   return (
     <li>
       <strong className="text-ink-900">{termino}:</strong> {children}
