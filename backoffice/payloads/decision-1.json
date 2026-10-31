@@ -1,0 +1,15 @@
+{
+  "decision_id": "DEC-001",
+  "incidencia_id": "INC-001",
+  "tipo_caso": "retraso_envio",
+  "accion_propuesta": "Reembolso parcial del 20% por el retraso",
+  "respuesta_cliente": "Lamentamos el retraso de tu pedido. Te ofrecemos un 20% de devolución en tu próxima compra.",
+  "justificacion": "El pedido acumula 5 días de retraso y el cliente ha abierto incidencia por Telegram.",
+  "prioridad": "alta",
+  "confianza": 0.85,
+  "riesgos": "Pérdida de margen si el cliente no vuelve a comprar.",
+  "estado": "pendiente_revision",
+  "revisado_por": null,
+  "fecha_propuesta": "2026-10-30T10:05:00Z",
+  "fecha_revision": null
+}
