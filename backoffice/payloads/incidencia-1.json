@@ -1,0 +1,12 @@
+{
+  "evento": "incident.created",
+  "incidencia_id": "INC-001",
+  "pedido_id": "ORD-001",
+  "cliente_email": "ana@test.com",
+  "telegram_chat_id": "123456789",
+  "tipo": "retraso_envio",
+  "descripcion": "Mi pedido no ha llegado",
+  "estado": "abierta",
+  "prioridad": null,
+  "fecha": "2026-10-30T10:00:00Z"
+}
