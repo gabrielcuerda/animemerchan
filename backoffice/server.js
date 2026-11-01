@@ -4,7 +4,7 @@ const path = require("node:path");
 
 const app = express();
 const db = new Database(path.join(__dirname, "pedidos.db"));
-const PUERTO = 4000;
+const PUERTO = process.env.PORT || 4000;
 
 app.use(express.json());
 
