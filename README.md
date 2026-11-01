@@ -280,3 +280,94 @@ cuál es y dónde añadirla (`lib/supabase/env.ts`, `lib/stripe.ts`).
 pnpm exec tsc --noEmit
 pnpm run build
 ```
+
+## Tarea 2: back-office e integración
+
+La Tarea 2 extiende la tienda con un **back-office independiente**: una API en
+Node.js/Express con su propia base de datos SQLite (`backoffice/pedidos.db`),
+separada de Supabase y desplegada fuera del entorno local. La tienda y los
+flujos de automatización le envían los eventos de la tienda por API (JSON).
+
+- **URL pública:** `https://backoffice-tarea2.onrender.com`
+- **Código:** carpeta `backoffice/`
+
+### Ejecución local
+
+Requisito: Node.js 18+ (comprueba con `node -v`).
+
+```bash
+cd backoffice
+npm install        # sólo la primera vez
+node server.js     # escucha en http://localhost:4000
+```
+
+La base de datos se crea sola al arrancar; cada PC tiene la suya local. En
+Windows, para probar con `curl` hay que usar `curl.exe` y meter el JSON en un
+fichero (`-d "@payloads/pedido-1.json"`), porque PowerShell rompe las comillas
+en línea.
+
+### Endpoints
+
+| Método  | Ruta                  | Qué hace                                                                            |
+| ------- | --------------------- | ----------------------------------------------------------------------------------- |
+| `POST`  | `/pedidos`            | crea un pedido (evento `order.created`)                                             |
+| `GET`   | `/pedidos`            | lista de pedidos (filtro `?cliente_email=`)                                         |
+| `GET`   | `/pedidos/:id`        | un pedido con sus líneas                                                            |
+| `PATCH` | `/pedidos/:id/estado` | cambio de estado (`creado`, `pago_simulado`, `preparacion`, `enviado`, `cancelado`) |
+| `POST`  | `/incidencias`        | crea una incidencia (evento `incident.created`)                                     |
+| `GET`   | `/incidencias`        | lista (filtros `?pedido_id=`, `?cliente_email=`, `?estado=`)                        |
+| `PATCH` | `/incidencias/:id`    | actualiza estado/tipo/prioridad                                                     |
+| `POST`  | `/decisiones`         | propuesta del agente de IA                                                          |
+| `GET`   | `/decisiones`         | lista (filtros `?incidencia_id=`, `?estado=`)                                       |
+| `PATCH` | `/decisiones/:id`     | revisión humana: aprobar o rechazar                                                 |
+| `GET`   | `/`                   | portada con la lista de endpoints                                                   |
+
+### Datos de prueba
+
+Los payloads de ejemplo están en `backoffice/payloads/`:
+
+- `pedido-1.json` — pedido válido de Ana García (`ana@test.com`, `ORD-001`)
+- `pedido-error.json` — payload inválido (faltan campos → responde 422)
+- `estado-enviado.json` — cambio de estado a `enviado`
+- `incidencia-1.json` — incidencia `INC-001` asociada a `ORD-001`
+- `decision-1.json` — propuesta del agente `DEC-001` sobre `INC-001`
+- `incidencia-en-revision.json` / `decision-aprobada.json` — parches de estado
+
+### Validaciones e idempotencia
+
+- `POST` con campos obligatorios ausentes → `422` con el detalle, registrado en
+  `GET /logs` como `resultado: "error"`.
+- Reenviar el mismo `pedido_id` / `incidencia_id` / `decision_id` **no duplica**
+  la entidad (idempotencia) y se registra como `duplicado ignorado`.
+- Estados y prioridades se validan contra listas cerradas.
+
+### Integración con la tienda
+
+La tienda envía `order.created` desde el webhook de Stripe
+(`lib/integracion/enviar-integracion.ts`) a la URL declarada en
+`INTEGRACION_WEBHOOK_URL`. En local apunta al back-office en `localhost:4000`
+para pruebas; en el flujo final pasa por el workflow de **n8n**, que valida y
+transforma el payload antes de reenviarlo al back-office público
+(`https://backoffice-tarea2.onrender.com/pedidos`).
+
+### Despliegue en Render
+
+Servicio **Web Service** en plan Free:
+
+| Campo          | Valor                                     |
+| -------------- | ----------------------------------------- |
+| Source         | este repositorio (rama `main`)            |
+| Root Directory | `backoffice`                              |
+| Build Command  | `npm install`                             |
+| Start Command  | `node server.js`                          |
+| Puerto         | asignado por Render en `process.env.PORT` |
+
+### Limitaciones conocidas
+
+- **Base de datos efímera:** en Render el disco no persiste; cada despliegue o
+  reinicio crea un `pedidos.db` vacío. Para la demo se regeneran los datos con
+  los payloads de prueba.
+- **Sin autenticación:** la API no tiene usuarios ni tokens; cualquiera con la
+  URL puede leer y escribir. Es un prototipo académico sin actividad comercial.
+- **Sin límite de tasa ni HTTPS propio:** se apoya en el TLS y el rate limiting
+  de Render.

@@ -572,25 +572,94 @@ app.patch("/decisiones/:id", (req, res) => {
 });
 
 // ---------------------------------------------------------------
-// 10. GET / — página de bienvenida con los endpoints disponibles
+// 10. GET / — portada HTML con endpoints y estado actual
 // ---------------------------------------------------------------
 app.get("/", (req, res) => {
-  res.json({
-    servicio: "Back-office Tarea 2",
-    endpoints: [
-      "POST /pedidos",
-      "GET /pedidos?cliente_email=",
-      "GET /pedidos/:id",
-      "PATCH /pedidos/:id/estado",
-      "POST /incidencias",
-      "GET /incidencias?pedido_id=&cliente_email=&estado=",
-      "PATCH /incidencias/:id",
-      "POST /decisiones",
-      "GET /decisiones?incidencia_id=&estado=",
-      "PATCH /decisiones/:id",
-      "GET /logs",
-    ],
-  });
+  const nPedidos = db.prepare("SELECT COUNT(*) AS n FROM pedidos").get().n;
+  const nIncidencias = db
+    .prepare("SELECT COUNT(*) AS n FROM incidencias")
+    .get().n;
+  const nDecisiones = db
+    .prepare("SELECT COUNT(*) AS n FROM decisiones_agente")
+    .get().n;
+
+  const filas = [
+    ["GET", "/", "Esta portada"],
+    ["POST", "/pedidos", "Crea un pedido (order.created)"],
+    ["GET", "/pedidos", "Lista de pedidos (?cliente_email=)"],
+    ["GET", "/pedidos/:id", "Pedido con sus líneas"],
+    ["PATCH", "/pedidos/:id/estado", "Cambia el estado"],
+    ["POST", "/incidencias", "Crea una incidencia (incident.created)"],
+    ["GET", "/incidencias", "Lista (?pedido_id= &cliente_email= &estado=)"],
+    ["PATCH", "/incidencias/:id", "Estado, tipo o prioridad"],
+    ["POST", "/decisiones", "Propuesta del agente de IA"],
+    ["GET", "/decisiones", "Lista (?incidencia_id= &estado=)"],
+    ["PATCH", "/decisiones/:id", "Revisión humana: aprobar o rechazar"],
+    ["GET", "/logs", "Trazabilidad de integraciones"],
+  ]
+    .map(
+      ([m, ruta, que]) =>
+        `<tr><td><span class="m ${m.toLowerCase()}">${m}</span></td><td><code>${ruta}</code></td><td>${que}</td></tr>`,
+    )
+    .join("");
+
+  res.type("html").send(`<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Back-office · Tarea 2</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, sans-serif; background:#f4f5f7; color:#1c2430; }
+  header { background: linear-gradient(135deg,#4338ca,#7c3aed); color:#fff; padding:32px 24px; }
+  header .caja { max-width:920px; margin:0 auto; }
+  h1 { margin:0 0 6px; font-size:26px; }
+  header p { margin:0; opacity:.85; }
+  .aviso { display:inline-block; margin-top:14px; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.4); padding:4px 10px; border-radius:999px; font-size:12px; letter-spacing:.4px; }
+  main { max-width:920px; margin:-18px auto 40px; padding:0 24px; }
+  .tarjetas { display:flex; gap:14px; flex-wrap:wrap; }
+  .tarjeta { background:#fff; border:1px solid #e3e6ea; border-radius:12px; padding:16px 20px; flex:1; min-width:180px; box-shadow:0 1px 3px rgba(16,24,40,.06); }
+  .tarjeta .num { font-size:30px; font-weight:700; color:#4338ca; }
+  .tarjeta .lab { font-size:13px; color:#667085; }
+  h2 { font-size:16px; margin:30px 0 10px; }
+  table { width:100%; border-collapse:collapse; background:#fff; border:1px solid #e3e6ea; border-radius:12px; overflow:hidden; box-shadow:0 1px 3px rgba(16,24,40,.06); }
+  th, td { text-align:left; padding:10px 14px; font-size:14px; border-bottom:1px solid #eef0f3; }
+  th { background:#f9fafb; color:#475467; font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
+  tr:last-child td { border-bottom:0; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size:13px; color:#344054; }
+  .m { display:inline-block; min-width:54px; text-align:center; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700; }
+  .m.get { background:#ecfdf3; color:#027a48; }
+  .m.post { background:#eff8ff; color:#175cd3; }
+  .m.patch { background:#fffaeb; color:#b54708; }
+  .url { background:#fff; border:1px dashed #c7cdd6; border-radius:10px; padding:12px 16px; font-family:ui-monospace, Consolas, monospace; font-size:13px; margin-top:18px; color:#344054; word-break:break-all; }
+  footer { max-width:920px; margin:0 auto 30px; padding:0 24px; font-size:12px; color:#98a2b3; text-align:center; }
+</style>
+</head>
+<body>
+<header>
+  <div class="caja">
+    <h1>Back-office · Tarea 2</h1>
+    <p>Sistema independiente del eCommerce: Express + SQLite con almacenamiento propio</p>
+    <span class="aviso">PROTOTIPO ACADÉMICO · SIN ACTIVIDAD COMERCIAL REAL</span>
+  </div>
+</header>
+<main>
+  <div class="tarjetas">
+    <div class="tarjeta"><div class="num">${nPedidos}</div><div class="lab">pedidos registrados</div></div>
+    <div class="tarjeta"><div class="num">${nIncidencias}</div><div class="lab">incidencias</div></div>
+    <div class="tarjeta"><div class="num">${nDecisiones}</div><div class="lab">decisiones del agente</div></div>
+  </div>
+  <h2>Endpoints</h2>
+  <table>
+    <tr><th>Método</th><th>Ruta</th><th>Descripción</th></tr>
+    ${filas}
+  </table>
+  <div class="url">Base URL: https://backoffice-tarea2.onrender.com — en local: http://localhost:4000</div>
+</main>
+<footer>Datos de prueba: ana@test.com · ORD-001 · INC-001 · DEC-001 — la base de datos es efímera en Render (se vacía en cada despliegue)</footer>
+</body>
+</html>`);
 });
 
 app.listen(PUERTO, () => {
