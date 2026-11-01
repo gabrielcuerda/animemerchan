@@ -1,0 +1,159 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "incident-created",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4f3eebd7-c47a-4c2d-9b96-4c5a1b64a24c",
+      "name": "Webhook",
+      "webhookId": "8d4e8ba7-daa3-466c-ac3f-f45bc01a8502"
+    },
+    {
+      "parameters": {
+        "jsCode": "const obligatorios = ['evento','incidencia_id','pedido_id','cliente_email',\n                      'telegram_chat_id','tipo','descripcion','fecha'];\n\nreturn $input.all().map(item => {\n  const d = item.json.body || {};\n  const errores = obligatorios\n    .filter(c => d[c] === undefined || d[c] === null || String(d[c]).trim() === '')\n    .map(c => `falta ${c}`);\n\n  if (d.evento && d.evento !== 'incident.created')\n    errores.push('evento no es incident.created');\n  if (d.cliente_email && !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(d.cliente_email))\n    errores.push('email no válido');\n\n  return { json: { ...d, valido: errores.length === 0, errores } };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "70b90ea5-0441-4957-a532-ea530fa1020a",
+      "name": "Validar incidencia"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "1d364afc-35ae-4e12-a299-21607b744cf3",
+              "leftValue": "={{ $json.valido }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        448,
+        0
+      ],
+      "id": "e3e3a87b-61a9-4e82-bada-989d29128c09",
+      "name": "¿Payload válido?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ \"ok\": false, \"errores\": $json.errores }) }}",
+        "options": {
+          "responseCode": 422
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        96
+      ],
+      "id": "77c442ee-0243-4aac-afd8-c7d27ea6974a",
+      "name": "Responder 422"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ \"ok\": true, \"incidencia_id\": $json.incidencia_id }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "7229f835-dc25-44f6-ab3a-a83282efd541",
+      "name": "Responder 200"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validar incidencia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar incidencia": {
+      "main": [
+        [
+          {
+            "node": "¿Payload válido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Payload válido?": {
+      "main": [
+        [
+          {
+            "node": "Responder 200",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder 422",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "8ce2fa98-3958-42b0-a82c-1cef3f6b45d2",
+  "meta": {
+    "instanceId": "fec9eb305423b3c66080183d16b3a0bdb2c48e36a381138e9b09464eeecbcfca"
+  },
+  "nodeGroups": [],
+  "id": "eBkjLmdvE5zVpsNy",
+  "tags": []
+}
