@@ -1,0 +1,26 @@
+name: Workflow n8n
+
+# Los tests leen el JSON exportado y ejecutan el código de los nodos Code con
+# mocks de $input/$execution. No necesitan n8n ni credenciales: si el contrato
+# o una validación se rompe, el PR falla antes de importar el workflow.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Tests del workflow
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Ejecutar tests
+        working-directory: n8n
+        run: npm test
