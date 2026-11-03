@@ -5,8 +5,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { IVA_PORCENTAJE } from "@/lib/constants";
 import { createPedido, getPedidoPorPago } from "@/lib/cart";
-import { direccionDesdeMetadata } from "@/lib/checkout";
-import { enviarFactura } from "@/lib/email/enviar-factura";
+import { direccionDesdeMetadata, envioDesdeMetadata } from "@/lib/checkout";
+import { enviarFactura, type ResultadoEnvio } from "@/lib/email/enviar-factura";
+import { enviarPedidoIntegracion } from "@/lib/integracion/enviar-integracion";
 import { getStripe } from "@/lib/stripe";
 import type { Pedido } from "@/lib/supabase/types";
 import Link from "next/link";
@@ -124,7 +125,16 @@ async function resolverPedido(sessionId: string): Promise<{
     };
   }
 
-  await enviarFacturaSinRomper({ pedido: confirmado, pagoId: sessionId });
+  const factura = await enviarFacturaSinRomper({
+    pedido: confirmado,
+    pagoId: sessionId,
+  });
+
+  // Camino de respaldo del webhook de Stripe: si el webhook no llegó, el
+  // pedido se ha creado aquí y hay que avisar a la integración igualmente.
+  // El back-office es idempotente por pedido_id, así que si luego llega el
+  // webhook y repite, no se duplica nada.
+  await enviarPedidoIntegracion(sessionId, email);
 
   return {
     estado: "confirmado",

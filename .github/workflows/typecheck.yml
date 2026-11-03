@@ -1,0 +1,31 @@
+name: Verificación
+
+# El build de Vercel ejecuta `next build`, que comprueba tipos. `next dev` no lo
+# hace, así que un error de TypeScript se descubre al desplegar. Este workflow
+# adelanta ese control a cada pull request.
+#
+# Solo se ejecuta `tsc`: `next build` necesita las variables de Supabase y
+# Stripe, que no deben estar en el CI. Los errores de tipos son los que rompen
+# el despliegue y no necesitan ninguna variable.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  tipos:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec tsc --noEmit
