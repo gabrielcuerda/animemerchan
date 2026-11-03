@@ -37,7 +37,7 @@ app.use(express.json());
 const ESQUEMA = `
   CREATE TABLE IF NOT EXISTS pedidos (
     pedido_id      TEXT PRIMARY KEY,
-    cliente_email  TEXT NOT NULL,
+    cliente_email  TEXT,
     cliente_nombre TEXT,
     total          DOUBLE PRECISION NOT NULL,
     moneda         TEXT NOT NULL DEFAULT 'EUR',
@@ -57,14 +57,15 @@ const ESQUEMA = `
   CREATE TABLE IF NOT EXISTS incidencias (
     incidencia_id    TEXT PRIMARY KEY,
     pedido_id        TEXT,
-    cliente_email    TEXT NOT NULL,
+    cliente_email    TEXT,
     telegram_chat_id TEXT,
     tipo             TEXT NOT NULL,
     descripcion      TEXT NOT NULL,
     estado           TEXT NOT NULL DEFAULT 'abierta',
     prioridad        TEXT,
     fecha            TEXT NOT NULL,
-    recibido_en      TIMESTAMPTZ NOT NULL DEFAULT now()
+    recibido_en      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    fecha_resolucion TIMESTAMPTZ
   );
 
   CREATE TABLE IF NOT EXISTS decisiones_agente (
@@ -221,7 +222,7 @@ app.post(
     }
 
     // Validación de campos obligatorios
-    const faltan = ["pedido_id", "cliente_email", "total", "lineas"].filter(
+    const faltan = ["pedido_id", "total", "lineas"].filter(
       (campo) => vacio(p[campo]),
     );
 
@@ -270,7 +271,7 @@ app.post(
          RETURNING pedido_id`,
         [
           p.pedido_id,
-          p.cliente_email,
+          vacio(p.cliente_email) ? null : p.cliente_email,
           p.cliente_nombre ?? null,
           Number(p.total),
           p.moneda ?? "EUR",
@@ -405,7 +406,34 @@ app.patch(
     res.json({ ok: true, pedido_id: req.params.id, estado });
   }),
 );
+// ---------------------------------------------------------------
+// 7b. GET /productos-mas-solicitados — top por unidades
+// ---------------------------------------------------------------
+app.get("/productos-mas-solicitados", manejar(async (req, res) => {
+  const r = await pool.query(`
+    SELECT producto,
+           SUM(cantidad)::int AS unidades,
+           COUNT(DISTINCT pedido_id)::int AS pedidos
+    FROM lineas_pedido
+    GROUP BY producto
+    ORDER BY unidades DESC, producto ASC
+    LIMIT 10
+  `);
+  res.json(r.rows);
+}));
 
+// ---------------------------------------------------------------
+// 7c. GET /metricas/resolucion — tiempo medio de resolución
+// ---------------------------------------------------------------
+app.get("/metricas/resolucion", manejar(async (req, res) => {
+  const r = await pool.query(`
+    SELECT AVG(EXTRACT(EPOCH FROM (fecha_resolucion - recibido_en)) * 1000) AS media_ms,
+           COUNT(*) FILTER (WHERE fecha_resolucion IS NOT NULL)::int AS cerradas
+    FROM incidencias
+  `);
+  const row = r.rows[0] || {};
+  res.json({ media_ms: row.media_ms ?? null, cerradas: row.cerradas ?? 0 });
+}));
 // ---------------------------------------------------------------
 // 8. GET /logs — historial de integraciones (aciertos y errores)
 //    Filtros opcionales: ?evento= y ?resultado=
@@ -502,7 +530,6 @@ app.post(
 
     const faltan = [
       "incidencia_id",
-      "cliente_email",
       "tipo",
       "descripcion",
       "fecha",
@@ -541,7 +568,7 @@ app.post(
       [
         p.incidencia_id,
         p.pedido_id ?? null,
-        p.cliente_email,
+        vacio(p.cliente_email) ? null : p.cliente_email,
         p.telegram_chat_id ?? null,
         p.tipo,
         p.descripcion,
@@ -648,6 +675,10 @@ app.patch(
       valores.push(estado);
       cambios.push(`estado = $${valores.length}`);
       resumen.push(`estado → ${estado}`);
+    }
+    if (estado === "resuelta" || estado === "cerrada") {
+      cambios.push("fecha_resolucion = COALESCE(fecha_resolucion, now())");
+      resumen.push("fecha_resolucion fijada");
     }
     if (tipo !== undefined) {
       valores.push(tipo);
@@ -938,6 +969,8 @@ app.get(
       ["PATCH", "/decisiones/:id", "Revisión humana: aprobar o rechazar"],
       ["GET", "/logs", "Trazabilidad (?evento= &resultado=)"],
       ["POST", "/logs", "Registra una ejecución de n8n (idempotente)"],
+      ["GET", "/productos-mas-solicitados", "Top de productos por unidades"],
+      ["GET", "/metricas/resolucion", "Tiempo medio de resolución de incidencias"],
     ]
       .map(
         ([m, ruta, que]) =>
@@ -1021,6 +1054,9 @@ app.use((err, req, res, next) => {
 // 14. Arranque: primero el esquema, luego escuchar
 // ---------------------------------------------------------------
 async function iniciar() {
+  await pool.query("ALTER TABLE incidencias ADD COLUMN IF NOT EXISTS fecha_resolucion TIMESTAMPTZ");
+  await pool.query("ALTER TABLE pedidos ALTER COLUMN cliente_email DROP NOT NULL");
+  await pool.query("ALTER TABLE incidencias ALTER COLUMN cliente_email DROP NOT NULL");
   await pool.query(ESQUEMA);
   app.listen(PUERTO, () => {
     console.log(`Back-office escuchando en http://localhost:${PUERTO}`);
