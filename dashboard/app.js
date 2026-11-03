@@ -385,8 +385,8 @@ async function cargar() {
 }
 
 function prepararModo() {
-  $("aviso-demo").hidden = !MODO_DEMO;
-  $("enlace-demo").hidden = MODO_DEMO;
+  const avisoDemo = $("aviso-demo");
+  if (avisoDemo) avisoDemo.hidden = !MODO_DEMO;
   if (MODO_DEMO) {
     document.title = "Cuadro de mando (demostración) · Animemerchan";
   }
