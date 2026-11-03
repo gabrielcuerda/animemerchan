@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cuadro de mando operativo · Animemerchan</title>
+    <meta
+      name="description"
+      content="Métricas del back-office de la Tarea 2 (SIE). Prototipo académico sin actividad comercial."
+    />
+    <link rel="stylesheet" href="./estilos.css" />
+  </head>
+  <body>
+    <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+    <header class="cabecera">
+      <div class="cabecera-texto">
+        <p class="etiqueta">Animemerchan · Tarea 2 · SIE</p>
+        <h1>Cuadro de mando operativo</h1>
+        <p class="subtitulo">
+          Indicadores calculados con los datos del back-office desplegado:
+          pedidos, incidencias, decisiones del agente y eventos de integración.
+        </p>
+      </div>
+      <div class="cabecera-acciones">
+        <button id="refrescar" type="button" class="boton">
+          Actualizar datos
+        </button>
+        <a id="enlace-demo" class="enlace" href="?modo=demo">
+          Ver modo demo
+        </a>
+      </div>
+    </header>
+
+    <p class="aviso-academico">
+      Prototipo académico universitario. No se venden productos reales y las
+      cifras proceden de pedidos y pruebas de laboratorio con datos ficticios.
+    </p>
+
+    <div id="aviso-demo" class="aviso-demo" role="status" hidden>
+      <strong>Datos de demostración.</strong> Esta vista usa un fichero local
+      (<code>demo/datos.json</code>) y no consulta el back-office. No sirve como
+      evidencia del sistema.
+      <a id="salir-demo" class="enlace" href="./">Volver a datos reales</a>
+    </div>
+
+    <main id="contenido">
+      <div id="aviso-parcial" class="aviso-demo" role="status" hidden></div>
+
+      <p id="cargando" class="cargando" role="status">
+        Consultando el back-office…
+      </p>
+
+      <section id="panel-error" class="panel-error" role="alert" hidden>
+        <h2>No se han podido leer los datos</h2>
+        <p id="error-mensaje"></p>
+        <p class="panel-error-ayuda">
+          Si el back-office está en Render, puede tardar unos segundos en
+          despertar. Vuelve a intentarlo.
+        </p>
+        <button id="reintentar" type="button" class="boton">
+          Reintentar
+        </button>
+      </section>
+
+      <div id="panel-datos" hidden>
+        <section aria-labelledby="titulo-kpis">
+          <h2 id="titulo-kpis" class="titulo-seccion">Indicadores</h2>
+          <div class="rejilla-kpi">
+            <article class="kpi">
+              <p class="kpi-nombre">Pedidos registrados</p>
+              <p class="kpi-valor" id="kpi-pedidos">—</p>
+              <p class="kpi-nota">Eventos <code>order.created</code></p>
+            </article>
+
+            <article class="kpi">
+              <p class="kpi-nombre">Importe simulado</p>
+              <p class="kpi-valor" id="kpi-importe">—</p>
+              <p class="kpi-nota">Suma de <code>pedidos.total</code></p>
+            </article>
+
+            <article class="kpi">
+              <p class="kpi-nombre">Incidencias abiertas</p>
+              <p class="kpi-valor" id="kpi-incidencias">—</p>
+              <p class="kpi-nota" id="nota-incidencias">—</p>
+            </article>
+
+            <article class="kpi">
+              <p class="kpi-nombre">Éxito de integración</p>
+              <p class="kpi-valor" id="kpi-exito">—</p>
+              <p class="kpi-nota" id="nota-exito">—</p>
+            </article>
+
+            <article class="kpi">
+              <p class="kpi-nombre">Eventos registrados</p>
+              <p class="kpi-valor" id="kpi-eventos">—</p>
+              <p class="kpi-nota" id="nota-eventos">—</p>
+            </article>
+
+            <article class="kpi">
+              <p class="kpi-nombre">Duplicados detectados</p>
+              <p class="kpi-valor" id="kpi-duplicados">—</p>
+              <p class="kpi-nota">Idempotencia del back-office</p>
+            </article>
+
+            <article class="kpi">
+              <p class="kpi-nombre">Decisiones del agente</p>
+              <p class="kpi-valor" id="kpi-decisiones">—</p>
+              <p class="kpi-nota" id="nota-decisiones">—</p>
+            </article>
+
+            <article class="kpi">
+              <p class="kpi-nombre">Aprobación humana</p>
+              <p class="kpi-valor" id="kpi-aprobacion">—</p>
+              <p class="kpi-nota" id="nota-aprobacion">—</p>
+            </article>
+
+            <article class="kpi">
+              <p class="kpi-nombre">Latencia media</p>
+              <p class="kpi-valor" id="kpi-latencia">—</p>
+              <p class="kpi-nota" id="nota-latencia">—</p>
+            </article>
+             <article class="kpi">
+               <p class="kpi-nombre">Conversión del flujo</p>
+               <p class="kpi-valor" id="kpi-conversion">—</p>
+               <p class="kpi-nota" id="nota-conversion">checkout.started → order.created</p>
+             </article>
+
+             <article class="kpi">
+              <p class="kpi-nombre">Tiempo medio de resolución</p>
+               <p class="kpi-valor" id="kpi-resolucion">—</p>
+               <p class="kpi-nota" id="nota-resolucion">Incidencias cerradas</p>
+             </article>
+          </div>
+        </section>
+
+        <section aria-labelledby="titulo-graficos">
+          <h2 id="titulo-graficos" class="titulo-seccion">Evolución</h2>
+          <div class="rejilla-graficos">
+            <figure class="tarjeta">
+              <figcaption class="tarjeta-titulo">
+                Pedidos por día
+                <span class="tarjeta-nota">últimos 14 días</span>
+              </figcaption>
+              <div
+                id="grafico-dias"
+                class="grafico"
+                role="img"
+                aria-label="Gráfico de barras con los pedidos de los últimos 14 días"
+              ></div>
+            </figure>
+
+            <figure class="tarjeta">
+              <figcaption class="tarjeta-titulo">
+                Pedidos por estado
+                <span class="tarjeta-nota">total acumulado</span>
+              </figcaption>
+              <div
+                id="grafico-estados"
+                class="grafico"
+                role="img"
+                aria-label="Gráfico de barras con los pedidos agrupados por estado"
+              ></div>
+            </figure>
+          </div>
+        </section>
+
+        <section aria-labelledby="titulo-detalle">
+          <h2 id="titulo-detalle" class="titulo-seccion">Detalle</h2>
+          <div class="rejilla-tablas">
+            <article class="tarjeta">
+              <h3 class="tarjeta-titulo">Incidencias por prioridad</h3>
+              <ul class="lista-datos" id="prioridades"></ul>
+            </article>
+
+            <article class="tarjeta">
+              <h3 class="tarjeta-titulo">Eventos por tipo</h3>
+              <ul class="lista-datos" id="eventos"></ul>
+            </article>
+
+            <article class="tarjeta">
+              <h3 class="tarjeta-titulo">Errores por tipo</h3>
+              <ul class="lista-datos" id="errores"></ul>
+            </article>
+
+             <article class="tarjeta">
+               <h3 class="tarjeta-titulo">Productos más solicitados</h3>
+               <ul class="lista-datos" id="productos"></ul>
+             </article>
+          </div>
+
+          <article class="tarjeta tarjeta-ancha">
+            <h3 class="tarjeta-titulo">Últimos eventos de integración</h3>
+            <div class="tabla-scroll">
+              <table class="tabla">
+                <thead>
+                  <tr>
+                    <th scope="col">Fecha</th>
+                    <th scope="col">Evento</th>
+                    <th scope="col">Pedido</th>
+                    <th scope="col">Resultado</th>
+                    <th scope="col">Detalle</th>
+                  </tr>
+                </thead>
+                <tbody id="ultimos-logs"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+      </div>
+    </main>
+
+    <footer class="pie">
+      <p>
+        <strong>Fuente:</strong> <span id="pie-fuente">—</span> ·
+        <strong>Consultado:</strong> <span id="pie-fecha">—</span>
+      </p>
+      <p id="pie-registros">—</p>
+      <p class="pie-modo" id="pie-modo"></p>
+    </footer>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

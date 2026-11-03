@@ -1,0 +1,11 @@
+{
+  "name": "animemerchan-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cuadro de mando operativo de la Tarea 2 (SIE). Consume el back-office desplegado.",
+  "scripts": {
+    "dev": "vercel dev",
+    "test": "node --test test/"
+  }
+}
