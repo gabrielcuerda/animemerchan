@@ -1,0 +1,5 @@
+{
+  "evento": "order.status_changed",
+  "pedido_id": "ORD-001",
+  "estado": "pago_simulado"
+}
