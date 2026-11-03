@@ -5,8 +5,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { IVA_PORCENTAJE } from "@/lib/constants";
 import { createPedido, getPedidoPorPago } from "@/lib/cart";
-import { direccionDesdeMetadata } from "@/lib/checkout";
-import { enviarFactura } from "@/lib/email/enviar-factura";
+import { direccionDesdeMetadata, envioDesdeMetadata } from "@/lib/checkout";
+import { enviarFactura, type ResultadoEnvio } from "@/lib/email/enviar-factura";
 import { getStripe } from "@/lib/stripe";
 import type { Pedido } from "@/lib/supabase/types";
 import Link from "next/link";
@@ -44,11 +44,12 @@ function emailDeLaSesion(
 async function enviarFacturaSinRomper(params: {
   pedido: Pedido;
   pagoId: string;
-}) {
+}): Promise<ResultadoEnvio | null> {
   try {
-    await enviarFactura(params);
+    return await enviarFactura(params);
   } catch (error) {
     console.error("[confirmación] Error enviando la factura:", error);
+    return null;
   }
 }
 
@@ -56,6 +57,8 @@ async function resolverPedido(sessionId: string): Promise<{
   estado: Estado;
   pedido?: Pedido;
   mensaje?: string;
+  /** `true` solo si la factura salió ahora o ya había salido antes. */
+  facturaEnviada?: boolean;
 }> {
   // Verificamos contra Stripe: la URL es del navegador y no vale como prueba
   // de que el pago se haya hecho.
@@ -77,9 +80,13 @@ async function resolverPedido(sessionId: string): Promise<{
     // salido de su lado. Se vuelve a llamar igualmente porque, si el webhook no
     // llegó (en local hace falta `stripe listen`), así es como sale igualmente.
     // `correo_reservar` hace que este segundo intento no duplique nada.
-    await enviarFacturaSinRomper({ pedido, pagoId: sessionId });
+    const factura = await enviarFacturaSinRomper({ pedido, pagoId: sessionId });
 
-    return { estado: "confirmado", pedido };
+    return {
+      estado: "confirmado",
+      pedido,
+      facturaEnviada: Boolean(factura?.enviado || factura?.yaEnviada),
+    };
   }
 
   // El webhook puede tardar o no haber llegado. Lo creamos aquí como red de
@@ -97,6 +104,7 @@ async function resolverPedido(sessionId: string): Promise<{
       metodoPago: "stripe",
       usuarioId: metadata.user_id || null,
       sessionId: metadata.cart_session_id || null,
+      costeEnvio: envioDesdeMetadata(metadata.coste_envio_eur),
     });
   } catch (error) {
     console.error("[confirmación] No se ha podido crear el pedido:", error);
@@ -116,9 +124,16 @@ async function resolverPedido(sessionId: string): Promise<{
     };
   }
 
-  await enviarFacturaSinRomper({ pedido: confirmado, pagoId: sessionId });
+  const factura = await enviarFacturaSinRomper({
+    pedido: confirmado,
+    pagoId: sessionId,
+  });
 
-  return { estado: "confirmado", pedido: confirmado };
+  return {
+    estado: "confirmado",
+    pedido: confirmado,
+    facturaEnviada: Boolean(factura?.enviado || factura?.yaEnviada),
+  };
 }
 
 export default async function OrderConfirmationPage(props: {
@@ -157,7 +172,7 @@ export default async function OrderConfirmationPage(props: {
     };
   }
 
-  const { estado, pedido, mensaje } = resultado;
+  const { estado, pedido, mensaje, facturaEnviada } = resultado;
 
   if (estado !== "confirmado" || !pedido) {
     return (
@@ -186,11 +201,20 @@ export default async function OrderConfirmationPage(props: {
         <CheckCircleIcon className="mx-auto h-16 w-16 text-green-500" />
         <h1 className="mt-6 text-3xl font-bold">¡Pedido confirmado!</h1>
         <p className="mt-2 text-neutral-500">
-          Te hemos enviado la factura por email
-          {pedido.direccion_pedido?.email
-            ? ` a ${pedido.direccion_pedido.email}`
-            : ""}
-          . Gracias por tu compra.
+          {facturaEnviada ? (
+            <>
+              Te hemos enviado la factura por email
+              {pedido.direccion_pedido?.email
+                ? ` a ${pedido.direccion_pedido.email}`
+                : ""}
+              . Gracias por tu compra.
+            </>
+          ) : (
+            <>
+              Tu pedido está confirmado, pero no hemos podido enviarte la factura
+              por email. Puedes verla y descargarla con el botón de abajo.
+            </>
+          )}
         </p>
         {pedido.pago_id ? (
           <Link
@@ -263,7 +287,10 @@ export default async function OrderConfirmationPage(props: {
               IVA ({desglose?.iva_porcentaje ?? IVA_PORCENTAJE} %)
             </dt>
             <dd>
-              {(desglose?.iva ?? pedido.total - pedido.subtotal).toFixed(2)}{" "}
+              {(
+                desglose?.iva ??
+                pedido.total - pedido.subtotal - pedido.coste_envio
+              ).toFixed(2)}{" "}
               {pedido.moneda}
             </dd>
           </div>

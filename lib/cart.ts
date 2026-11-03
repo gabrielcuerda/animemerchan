@@ -1,4 +1,5 @@
-import { COSTE_ENVIO, IVA_PORCENTAJE, MONEDA } from "@/lib/constants";
+import { IVA_PORCENTAJE, MONEDA } from "@/lib/constants";
+import { calcularCosteEnvio } from "@/lib/envio";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { randomUUID } from "crypto";
@@ -82,13 +83,14 @@ function calcularTotales(items: CarritoItem[]) {
     0,
   );
   const iva = Math.round(subtotal * IVA_PORCENTAJE) / 100;
-  const total = subtotal + iva + COSTE_ENVIO;
+  const costeEnvio = calcularCosteEnvio(subtotal);
+  const total = subtotal + iva + costeEnvio;
 
   return {
     totalItems: items.reduce((sum, item) => sum + item.cantidad, 0),
     subtotal: Math.round(subtotal * 100) / 100,
     iva,
-    costeEnvio: COSTE_ENVIO,
+    costeEnvio,
     total: Math.round(total * 100) / 100,
     moneda: MONEDA,
   };
@@ -246,6 +248,12 @@ export async function createPedido(payload: {
   /** El webhook no recibe cookies: le pasa el dueño explícitamente. */
   usuarioId?: string | null;
   sessionId?: string | null;
+  /**
+   * Envío que se cobró en Stripe (`metadata.coste_envio_eur`). Es el único dato
+   * del carrito que sobrevive cuando el pedido se crea desde el webhook, que no
+   * recibe cookies. Si no llega, `crear_pedido` lo calcula a partir del subtotal.
+   */
+  costeEnvio?: number | null;
 }): Promise<string> {
   const supabase = await createSupabaseServerClient();
 
@@ -261,7 +269,11 @@ export async function createPedido(payload: {
     p_pago_id: payload.pagoId,
     p_metodo_pago: payload.metodoPago ?? "stripe",
     p_iva_porcentaje: IVA_PORCENTAJE,
-    p_coste_envio: COSTE_ENVIO,
+    // El envío se cobró en Stripe con los tramos de `lib/envio.ts` y viaja en
+    // la metadata de la sesión. Si no viene (sesiones antiguas), se manda null
+    // y lo decide `crear_pedido`:
+    // supabase/migrations/20261103000000_envio_variable.sql
+    p_coste_envio: payload.costeEnvio ?? null,
   });
 
   if (error) throw rpcError("No se ha podido crear el pedido", error);

@@ -201,9 +201,15 @@ export default function CartModal() {
                     <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 dark:border-neutral-700">
                       <p>{translate(lang, "cart.shipping")}</p>
                       <p className="text-right">
-                        {cart.costeEnvio > 0
-                          ? translate(lang, "cart.shippingCalculated")
-                          : translate(lang, "cart.freeShipping")}
+                        {cart.costeEnvio > 0 ? (
+                          <Price
+                            className="text-right"
+                            amount={cart.costeEnvio.toFixed(2)}
+                            currencyCode="EUR"
+                          />
+                        ) : (
+                          translate(lang, "cart.freeShipping")
+                        )}
                       </p>
                     </div>
                     <div className="flex items-center justify-between text-base">

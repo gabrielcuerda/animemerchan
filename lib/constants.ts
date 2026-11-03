@@ -122,8 +122,10 @@ export const TAGS = {
 /** `productos.precio` se guarda SIN IVA: hay que sumarlo al cobrar. */
 export const IVA_PORCENTAJE = 21;
 
-/** Envío gratuito en todos los pedidos por ahora. */
-export const COSTE_ENVIO = 0;
+/**
+ * El envío ya no es una constante: depende del subtotal.
+ * La regla vive en `lib/envio.ts` (`calcularCosteEnvio`).
+ */
 
 export const MONEDA = "EUR";
 
