@@ -168,6 +168,57 @@ app.post(
   "/pedidos",
   manejar(async (req, res) => {
     const p = req.body || {};
+    // Escenario 2: la tienda avisa de los cambios de estado por la misma
+    // puerta de entrada (order.*). En modo directo se aplica aquí; cuando
+    // INTEGRACION_WEBHOOK_URL apunte a n8n, n8n lo reenviará a
+    // PATCH /pedidos/:id/estado y este camino no se usará.
+    if (p.evento === "order.status_changed") {
+      const faltanEstado = ["pedido_id", "estado"].filter((campo) =>
+        vacio(p[campo]),
+      );
+
+      if (faltanEstado.length > 0) {
+        const detalle = `Faltan campos: ${faltanEstado.join(", ")}`;
+        await registrar(
+          "order.status_changed",
+          p.pedido_id ?? null,
+          "error",
+          detalle,
+        );
+        return res.status(422).json({ error: detalle });
+      }
+
+      if (!ESTADOS_VALIDOS.includes(p.estado)) {
+        const detalle = `Estado inválido. Valores: ${ESTADOS_VALIDOS.join(", ")}`;
+        await registrar("order.status_changed", p.pedido_id, "error", detalle);
+        return res.status(422).json({ error: detalle });
+      }
+
+      const cambio = await pool.query(
+        "UPDATE pedidos SET estado = $1 WHERE pedido_id = $2 RETURNING pedido_id",
+        [p.estado, p.pedido_id],
+      );
+
+      if (cambio.rowCount === 0) {
+        await registrar(
+          "order.status_changed",
+          p.pedido_id,
+          "error",
+          "pedido inexistente",
+        );
+        return res.status(404).json({ error: "Pedido no encontrado" });
+      }
+
+      await registrar(
+        "order.status_changed",
+        p.pedido_id,
+        "correcto",
+        `estado → ${p.estado}`,
+      );
+      return res
+        .status(200)
+        .json({ ok: true, pedido_id: p.pedido_id, estado: p.estado });
+    }
 
     // Validación de campos obligatorios
     const faltan = ["pedido_id", "cliente_email", "total", "lineas"].filter(
