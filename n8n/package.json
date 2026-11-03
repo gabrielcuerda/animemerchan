@@ -1,0 +1,9 @@
+{
+  "name": "n8n-tarea2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build-workflow.mjs",
+    "test": "node --test test/*.test.mjs"
+  }
+}
