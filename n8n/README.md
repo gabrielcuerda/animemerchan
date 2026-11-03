@@ -133,7 +133,8 @@ Copia [`/.env.example`](./.env.example) y rellena los valores. Las claves:
 1. En n8n: **Workflows → Import from File**.
 2. Selecciona `workflow-integracion.json`.
 3. Abre el workflow y revisa que `BACKOFFICE_URL` esté definida en el entorno.
-4. Pulsa **Save** y luego **Active**.
+4. Pulsa **Save** y luego **Active** (en n8n 2.x el botón se llama
+   **Publish**).
 5. La URL de producción es:
 
    ```text
@@ -302,7 +303,7 @@ Guarda las capturas en [`../docs/evidencias/`](../docs/evidencias/README.md):
 
 | Síntoma | Causa | Solución |
 | --- | --- | --- |
-| `404` al llamar al webhook | Workflow no activo o ruta mal | Activa el workflow y usa `/webhook/`, no `/webhook-test/`. |
+| `404` al llamar al webhook | Workflow no publicado/activo o ruta mal | Publica/activa el workflow y usa `/webhook/`, no `/webhook-test/`. |
 | `$env.BACKOFFICE_URL` vacío | `N8N_BLOCK_ENV_ACCESS_IN_NODE=true` | Ponlo a `false` y reinicia. |
 | `502` en Render | n8n escucha en otro puerto | `PORT=5678` y `N8N_PORT=5678`. |
 | Error de conexión a Supabase | Pooler equivocado o SSL | Usa Session pooler (5432), `DB_POSTGRESDB_SSL_ENABLED=true` y `..._REJECT_UNAUTHORIZED=false`. |
