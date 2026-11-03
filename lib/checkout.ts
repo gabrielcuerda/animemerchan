@@ -60,6 +60,29 @@ export function direccionDesdeMetadata(valor?: string | null): DireccionEnvio {
   };
 }
 
+/**
+ * Coste de envío que se cobró en Stripe, leído de `metadata.coste_envio_eur`.
+ *
+ * Existe porque el webhook de confirmación llega sin cookies y no puede volver
+ * a leer el carrito: el único sitio que sabe cuánto se cobró de envío es la
+ * Checkout Session. Devuelve `null` si el valor no está o no es un número
+ * razonable, para que `crear_pedido` decida (es el caso de las sesiones creadas
+ * antes de que existiera esta clave).
+ */
+export function envioDesdeMetadata(valor?: string | null): number | null {
+  const limpio = String(valor ?? "").trim();
+
+  // `Number("")` es 0, y 0 es un envío gratis legítimo: hay que distinguir
+  // "no hay dato" de "se cobraron 0 €".
+  if (limpio === "") return null;
+
+  const importe = Number(limpio);
+
+  if (!Number.isFinite(importe) || importe < 0 || importe > 1000) return null;
+
+  return Math.round(importe * 100) / 100;
+}
+
 type Linea = {
   quantity: number;
   price_data: {
@@ -201,6 +224,10 @@ export async function crearSesionCheckout(params: {
       // hay recorte porque un email no llega a 500.
       email: email ?? "",
       total_eur: cart.total.toFixed(2),
+      // El envío viaja a la confirmación del pago. El webhook no puede releer
+      // el carrito (no tiene cookies) y `crear_pedido` guarda lo que recibe en
+      // `p_coste_envio`; sin este dato la factura saldría con envío 0 €.
+      coste_envio_eur: cart.costeEnvio.toFixed(2),
     },
   });
 

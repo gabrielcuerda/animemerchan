@@ -1,4 +1,4 @@
-import { direccionDesdeMetadata } from "@/lib/checkout";
+import { direccionDesdeMetadata, envioDesdeMetadata } from "@/lib/checkout";
 import { createPedido } from "@/lib/cart";
 import { enviarFactura } from "@/lib/email/enviar-factura";
 import { getStripe, getStripeWebhookSecret } from "@/lib/stripe";
@@ -87,6 +87,10 @@ export async function POST(req: NextRequest) {
           metodoPago: "stripe",
           usuarioId: metadata.user_id || null,
           sessionId: metadata.cart_session_id || null,
+          // Sin esto el pedido guardaba envío 0 € y la factura salía gratis
+          // aunque Stripe lo hubiera cobrado: el webhook no puede releer el
+          // carrito.
+          costeEnvio: envioDesdeMetadata(metadata.coste_envio_eur),
         });
 
         console.log(`[stripe] Pedido ${pedidoId} creado (${session.id})`);

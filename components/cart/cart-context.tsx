@@ -12,7 +12,8 @@ import React, {
   useMemo,
   useOptimistic,
 } from "react";
-import { COSTE_ENVIO, IVA_PORCENTAJE } from "@/lib/constants";
+import { IVA_PORCENTAJE } from "@/lib/constants";
+import { calcularCosteEnvio } from "@/lib/envio";
 import type { Carrito, CarritoItem } from "@/lib/supabase/types";
 
 type UpdateType = "plus" | "minus" | "delete";
@@ -88,13 +89,14 @@ function updateCartTotals(
     0,
   );
   const iva = Math.round(subtotal * IVA_PORCENTAJE) / 100;
+  const costeEnvio = calcularCosteEnvio(subtotal);
 
   return {
     totalItems,
     subtotal: Math.round(subtotal * 100) / 100,
     iva,
-    costeEnvio: COSTE_ENVIO,
-    total: Math.round((subtotal + iva + COSTE_ENVIO) * 100) / 100,
+    costeEnvio,
+    total: Math.round((subtotal + iva + costeEnvio) * 100) / 100,
     moneda: "EUR",
   };
 }
@@ -105,7 +107,7 @@ function createEmptyCart(): Carrito {
     totalItems: 0,
     subtotal: 0,
     iva: 0,
-    costeEnvio: COSTE_ENVIO,
+    costeEnvio: 0,
     total: 0,
     moneda: "EUR",
   };

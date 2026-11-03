@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Price from "@/components/price";
 import { DEFAULT_OPTION, IVA_PORCENTAJE } from "@/lib/constants";
+import { ENVIO_GRATIS_DESDE, faltaParaEnvioGratis } from "@/lib/envio";
 import { createUrl } from "@/lib/utils";
 import { DeleteItemButton } from "@/components/cart/delete-item-button";
 import { EditItemQuantityButton } from "@/components/cart/edit-item-quantity-button";
@@ -135,7 +136,14 @@ export default async function CartPage() {
                   Envío
                 </span>
                 <span>
-                  {cart.costeEnvio > 0 ? "Calculado al pagar" : "Gratis"}
+                  {cart.costeEnvio > 0 ? (
+                    <Price
+                      amount={cart.costeEnvio.toFixed(2)}
+                      currencyCode="EUR"
+                    />
+                  ) : (
+                    "Gratis"
+                  )}
                 </span>
               </div>
               <div className="flex justify-between border-t border-neutral-200 pt-3 text-base font-semibold dark:border-neutral-700">
@@ -147,6 +155,12 @@ export default async function CartPage() {
             <p className="mt-3 text-xs text-neutral-500">
               Los precios no incluyen IVA. Se aplica un {IVA_PORCENTAJE} % en el
               momento del pago.
+            </p>
+
+            <p className="mt-1 text-xs text-neutral-500">
+              {cart.costeEnvio > 0
+                ? `Envío gratis a partir de ${ENVIO_GRATIS_DESDE} €. Te faltan ${faltaParaEnvioGratis(cart.subtotal).toFixed(2)} €.`
+                : "Este pedido tiene envío gratuito."}
             </p>
 
             <Link
