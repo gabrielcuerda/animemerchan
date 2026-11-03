@@ -104,3 +104,60 @@ export async function enviarPedidoIntegracion(
     );
   }
 }
+
+/**
+ * Avisa del cambio de estado de un pedido (Escenario 2).
+ *
+ * Mismo destino que order.created: primero el back-office en directo y
+ * después el webhook de n8n, que lo reenviará a PATCH /pedidos/:id/estado.
+ * El estado viaja ya traducido al vocabulario del back-office, así que
+ * n8n no tiene que reimplementar el mapeo.
+ *
+ * Como el resto de la integración, nunca lanza: si falla, el cambio de
+ * estado en la tienda ya se ha hecho y sólo se anota en la consola.
+ */
+export async function enviarEstadoIntegracion(
+  pedidoId: string,
+  estadoAnterior: string | null,
+  estado: string,
+): Promise<void> {
+  const url = process.env.INTEGRACION_WEBHOOK_URL;
+
+  if (!url) {
+    console.warn(
+      "[integracion] INTEGRACION_WEBHOOK_URL no configurada; cambio de estado NO enviado.",
+    );
+    return;
+  }
+
+  try {
+    const respuesta = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        evento: "order.status_changed",
+        pedido_id: pedidoId,
+        ...(estadoAnterior
+          ? { estado_anterior: ESTADOS[estadoAnterior] ?? estadoAnterior }
+          : {}),
+        estado: ESTADOS[estado] ?? estado,
+      }),
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (respuesta.ok) {
+      console.log(
+        `[integracion] Cambio de estado de ${pedidoId} enviado (${estado}).`,
+      );
+    } else {
+      console.error(
+        `[integracion] El receptor devolvió ${respuesta.status} para el cambio de estado de ${pedidoId}.`,
+      );
+    }
+  } catch (error) {
+    console.error(
+      "[integracion] Error enviando el cambio de estado al back-office:",
+      error,
+    );
+  }
+}

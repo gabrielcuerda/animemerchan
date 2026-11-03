@@ -6,6 +6,7 @@ import { PEDIDO_STATUS } from "@/lib/admin/tipos";
 import type { AdminActionState } from "@/lib/admin/tipos";
 import { enviarFactura } from "@/lib/email/enviar-factura";
 import { revalidatePath } from "next/cache";
+import { enviarEstadoIntegracion } from "@/lib/integracion/enviar-integracion";
 
 function revalidar(pedidoId?: string) {
   revalidatePath("/admin");
@@ -47,6 +48,9 @@ export async function cambiarEstadoPedido(
   revalidar(pedidoId);
 
   const anterior = typeof data === "string" ? data : null;
+  // Escenario 2: el back-office (vía n8n) debe reflejar el mismo estado.
+  // Nunca lanza: si la integración falla, el cambio en la tienda ya está hecho.
+  await enviarEstadoIntegracion(pedidoId, anterior, estado);
 
   if (anterior !== "cancelled" && estado === "cancelled") {
     return {

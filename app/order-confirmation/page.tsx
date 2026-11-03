@@ -5,8 +5,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { IVA_PORCENTAJE } from "@/lib/constants";
 import { createPedido, getPedidoPorPago } from "@/lib/cart";
-import { direccionDesdeMetadata, envioDesdeMetadata } from "@/lib/checkout";
-import { enviarFactura, type ResultadoEnvio } from "@/lib/email/enviar-factura";
+import { direccionDesdeMetadata } from "@/lib/checkout";
+import { enviarFactura } from "@/lib/email/enviar-factura";
 import { getStripe } from "@/lib/stripe";
 import type { Pedido } from "@/lib/supabase/types";
 import Link from "next/link";
@@ -124,10 +124,7 @@ async function resolverPedido(sessionId: string): Promise<{
     };
   }
 
-  const factura = await enviarFacturaSinRomper({
-    pedido: confirmado,
-    pagoId: sessionId,
-  });
+  await enviarFacturaSinRomper({ pedido: confirmado, pagoId: sessionId });
 
   return {
     estado: "confirmado",
