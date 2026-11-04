@@ -1,0 +1,1133 @@
+{
+  "name": "Tarea 2 - Integracion tienda / back-office",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "integracion-tarea2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -900,
+        300
+      ],
+      "id": "e065db36-3241-4e60-a924-fed440b79719",
+      "name": "Webhook tienda",
+      "webhookId": "16c27b04-fcb1-4a7d-b84b-0b9cc949f4da"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ESTADOS_PEDIDO = ['creado', 'pago_simulado', 'preparacion', 'enviado', 'cancelado'];\nconst ESTADOS_INCIDENCIA = ['abierta', 'en_revision', 'resuelta', 'cerrada'];\nconst PRIORIDADES = ['alta', 'media', 'baja'];\nconst EVENTOS = ['order.created', 'order.status_changed', 'incident.created'];\n\n// El Webhook de n8n entrega { headers, params, query, body }. Se acepta\n// también el payload plano para poder probar el nodo con \"Execute step\".\nconst crudo = $input.first().json || {};\nconst d = crudo.body && typeof crudo.body === 'object' ? crudo.body : crudo;\nconst errores = [];\n\nfunction texto(valor) {\n  if (valor === undefined || valor === null) return '';\n  return String(valor).trim();\n}\n\nfunction numero(valor) {\n  if (valor === undefined || valor === null || valor === '') return NaN;\n  return Number(valor);\n}\n\nfunction emailValido(valor) {\n  return /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(valor);\n}\n\nfunction fechaValida(valor) {\n  return !Number.isNaN(Date.parse(valor));\n}\n\nconst evento = texto(d.evento);\nif (!EVENTOS.includes(evento)) {\n  errores.push('evento no soportado: \"' + evento + '\"');\n}\n\nconst executionId = String($execution.id);\nconst inicioMs = Date.now();\nlet entidadId = texto(d.pedido_id) || null;\nlet payload = {};\n\nif (evento === 'order.created') {\n  const pedidoId = texto(d.pedido_id);\n  if (!pedidoId) errores.push('falta pedido_id');\n  entidadId = pedidoId || null;\n\n  const total = numero(d.total);\n  if (!Number.isFinite(total) || total <= 0) {\n    errores.push('total debe ser un número mayor que 0');\n  }\n\n  const estado = texto(d.estado) || 'creado';\n  if (!ESTADOS_PEDIDO.includes(estado)) {\n    errores.push('estado inválido: \"' + estado + '\"');\n  }\n\n  const moneda = (texto(d.moneda) || 'EUR').toUpperCase();\n  if (!/^[A-Z]{3}$/.test(moneda)) {\n    errores.push('moneda debe ser un código ISO de 3 letras');\n  }\n\n  const clienteEmail = texto(d.cliente_email);\n  if (clienteEmail && !emailValido(clienteEmail)) {\n    errores.push('cliente_email no válido');\n  }\n\n  const fecha = texto(d.fecha) || new Date().toISOString();\n  if (!fechaValida(fecha)) {\n    errores.push('fecha no válida (ISO 8601)');\n  }\n\n  const lineas = Array.isArray(d.lineas) ? d.lineas : null;\n  if (!lineas || lineas.length === 0) {\n    errores.push('lineas debe ser una lista con al menos una línea');\n  } else {\n    for (let i = 0; i < lineas.length; i += 1) {\n      const linea = lineas[i] || {};\n      if (!texto(linea.producto)) {\n        errores.push('lineas[' + i + '].producto es obligatorio');\n      }\n      const cantidad = numero(linea.cantidad);\n      if (!Number.isInteger(cantidad) || cantidad <= 0) {\n        errores.push('lineas[' + i + '].cantidad debe ser un entero mayor que 0');\n      }\n      const precio = numero(linea.precio);\n      if (!Number.isFinite(precio) || precio < 0) {\n        errores.push('lineas[' + i + '].precio debe ser un número mayor o igual que 0');\n      }\n    }\n  }\n\n  payload = {\n    evento: evento,\n    pedido_id: pedidoId,\n    cliente_email: clienteEmail || null,\n    cliente_nombre: texto(d.cliente_nombre) || null,\n    total: total,\n    moneda: moneda,\n    estado: estado,\n    fecha: fechaValida(fecha) ? fecha : null,\n    lineas: (lineas || []).map(function (linea) {\n      return {\n        producto: texto(linea && linea.producto),\n        cantidad: numero(linea && linea.cantidad),\n        precio: numero(linea && linea.precio),\n      };\n    }),\n  };\n}\n\nif (evento === 'order.status_changed') {\n  const pedidoId = texto(d.pedido_id);\n  if (!pedidoId) errores.push('falta pedido_id');\n  entidadId = pedidoId || null;\n\n  const estado = texto(d.estado);\n  if (!ESTADOS_PEDIDO.includes(estado)) {\n    errores.push('estado inválido: \"' + estado + '\"');\n  }\n\n  const anterior = texto(d.estado_anterior);\n  if (anterior && !ESTADOS_PEDIDO.includes(anterior)) {\n    errores.push('estado_anterior inválido: \"' + anterior + '\"');\n  }\n\n  payload = {\n    evento: evento,\n    pedido_id: pedidoId,\n    estado: estado,\n  };\n  if (anterior) payload.estado_anterior = anterior;\n}\n\nif (evento === 'incident.created') {\n  const incidenciaId = texto(d.incidencia_id);\n  if (!incidenciaId) errores.push('falta incidencia_id');\n  entidadId = incidenciaId || null;\n\n  const tipo = texto(d.tipo);\n  if (!tipo) errores.push('falta tipo');\n\n  const descripcion = texto(d.descripcion);\n  if (!descripcion) errores.push('falta descripcion');\n\n  const fecha = texto(d.fecha);\n  if (!fecha || !fechaValida(fecha)) {\n    errores.push('fecha no válida (ISO 8601)');\n  }\n\n  const estado = texto(d.estado) || 'abierta';\n  if (!ESTADOS_INCIDENCIA.includes(estado)) {\n    errores.push('estado inválido: \"' + estado + '\"');\n  }\n\n  const prioridad = texto(d.prioridad) || null;\n  if (prioridad && !PRIORIDADES.includes(prioridad)) {\n    errores.push('prioridad inválida: \"' + prioridad + '\"');\n  }\n\n  const clienteEmail = texto(d.cliente_email);\n  if (clienteEmail && !emailValido(clienteEmail)) {\n    errores.push('cliente_email no válido');\n  }\n\n  payload = {\n    evento: evento,\n    incidencia_id: incidenciaId,\n    pedido_id: texto(d.pedido_id) || null,\n    cliente_email: clienteEmail || null,\n    telegram_chat_id: texto(d.telegram_chat_id) || null,\n    tipo: tipo,\n    descripcion: descripcion,\n    estado: estado,\n    prioridad: prioridad,\n    fecha: fechaValida(fecha) ? fecha : null,\n  };\n}\n\nreturn [{\n  json: {\n    valido: errores.length === 0,\n    errores: errores,\n    evento: evento || 'desconocido',\n    entidad_id: entidadId,\n    execution_id: executionId,\n    inicio_ms: inicioMs,\n    payload: payload,\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -660,
+        300
+      ],
+      "id": "3dea6503-34c8-43b3-976c-7b87308f358d",
+      "name": "Validar payload"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b081dbfc-54a3-4c02-bff0-f28acc07eee0",
+              "leftValue": "={{ $json.valido }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -420,
+        300
+      ],
+      "id": "befce48d-d91e-4bc0-9336-af6d1fcacc4b",
+      "name": "¿Payload válido?"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "bbaa1685-a184-4b81-99ec-92147a7a1cec",
+                    "leftValue": "={{ $json.evento }}",
+                    "rightValue": "order.created",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "order.created"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f1997949-82e0-4db5-b291-39f295121381",
+                    "leftValue": "={{ $json.evento }}",
+                    "rightValue": "order.status_changed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "order.status_changed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "22bc0792-2837-4261-b1cc-51de8f6e2f98",
+                    "leftValue": "={{ $json.evento }}",
+                    "rightValue": "incident.created",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "incident.created"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -180,
+        120
+      ],
+      "id": "2ede8667-4f4a-40d6-af72-c25ba291204f",
+      "name": "Enrutar por evento"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKOFFICE_URL }}/pedidos",
+        "options": {
+          "timeout": 10000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        60,
+        -120
+      ],
+      "id": "2bca1e31-1dba-4c10-9738-ede1c1e57c0f",
+      "name": "HTTP crear pedido",
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Validar payload').item.json;\nconst res = $input.first().json || {};\nconst duplicado = Boolean(res.aviso);\nconst ok = res.ok === true || duplicado;\nconst detalle = duplicado ? 'duplicado ignorado' : 'pedido creado';\nconst duracion = Date.now() - base.inicio_ms;\n\nreturn [{\n  json: {\n    http_status: duplicado ? 200 : 201,\n    respuesta: {\n      ok: ok,\n      duplicado: duplicado,\n      evento: base.evento,\n      pedido_id: base.entidad_id,\n      execution_id: base.execution_id,\n    },\n    log: {\n      execution_id: base.execution_id,\n      evento: base.evento,\n      pedido_id: base.entidad_id,\n      resultado: ok ? 'correcto' : 'error',\n      codigo_error: ok ? null : 'BACKOFFICE_RESPUESTA',\n      detalle: detalle,\n      duracion_ms: duracion,\n      origen: 'n8n',\n    },\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        -120
+      ],
+      "id": "d696c357-5749-43dd-9f2d-8c453a283563",
+      "name": "Evaluar pedido"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKOFFICE_URL }}/logs",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.log) }}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        -120
+      ],
+      "id": "be668edf-8ace-495e-b0cb-5443d70a8a3f",
+      "name": "Log pedido",
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Evaluar pedido').item.json.respuesta }}",
+        "options": {
+          "responseCode": "={{ Number($('Evaluar pedido').item.json.http_status) }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        780,
+        -120
+      ],
+      "id": "c9028066-66e0-4e64-a21b-784650b2cf7e",
+      "name": "Responder pedido"
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Validar payload').item.json;\nconst err = $input.first().json || {};\n\n// n8n entrega el error del nodo HTTP con formas distintas según la versión:\n// a veces { error: { httpCode, message } } y a veces { error: \"texto\" }.\nconst detalleError = typeof err.error === 'string'\n  ? err.error\n  : (err.error && err.error.message) || err.message || 'Error desconocido';\n\nconst status = Number(\n  err.statusCode ||\n  err.httpCode ||\n  (err.error && err.error.httpCode) ||\n  (err.error && err.error.statusCode) ||\n  (err.error && err.error.status) ||\n  0\n);\n\nconst esTimeout = /timeout|timed out|ETIMEDOUT|aborted|ECONNRESET/i.test(detalleError);\nlet httpStatus = 502;\nlet codigo = 'BACKOFFICE_5XX';\n\nif (status === 404) {\n  httpStatus = 404;\n  codigo = 'BACKOFFICE_404';\n} else if (status === 422) {\n  httpStatus = 422;\n  codigo = 'BACKOFFICE_422';\n} else if (esTimeout) {\n  httpStatus = 504;\n  codigo = 'BACKOFFICE_TIMEOUT';\n}\n\nconst duracion = Date.now() - base.inicio_ms;\nconst detalle = ('Back-office ' + (status || 'sin respuesta') + ': ' + detalleError).slice(0, 500);\nconst pedido = base.evento === 'incident.created'\n  ? (base.payload && base.payload.pedido_id ? base.payload.pedido_id : null)\n  : base.entidad_id;\n\nconst respuesta = {\n  ok: false,\n  evento: base.evento,\n  codigo_error: codigo,\n  execution_id: base.execution_id,\n};\n\nif (base.evento === 'incident.created') {\n  respuesta.incidencia_id = base.entidad_id;\n} else {\n  respuesta.pedido_id = base.entidad_id;\n}\n\nreturn [{\n  json: {\n    http_status: httpStatus,\n    respuesta: respuesta,\n    log: {\n      execution_id: base.execution_id,\n      evento: base.evento,\n      pedido_id: pedido,\n      resultado: 'error',\n      codigo_error: codigo,\n      detalle: detalle,\n      duracion_ms: duracion,\n      origen: 'n8n',\n    },\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        20
+      ],
+      "id": "07a5b1fb-e3d9-4fc1-8a40-3ad8e45a9a60",
+      "name": "Error pedido"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKOFFICE_URL }}/logs",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.log) }}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        20
+      ],
+      "id": "89f6ab60-12e4-4c46-af18-f70594b53f38",
+      "name": "Log error pedido",
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.ALERT_TELEGRAM_CHAT_ID, text: '🚨 Integración: ' + $('Error pedido').item.json.log.evento + ' | ' + ($('Error pedido').item.json.log.codigo_error || 'sin código') + ' | ' + $('Error pedido').item.json.log.detalle }) }}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        20
+      ],
+      "id": "77a58943-1052-4fae-a795-7a58efbd2e5b",
+      "name": "Avisar Telegram pedido",
+      "onError": "continueRegularOutput",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Error pedido').item.json.respuesta }}",
+        "options": {
+          "responseCode": "={{ Number($('Error pedido').item.json.http_status) }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        820,
+        20
+      ],
+      "id": "dafd5742-8205-4101-be9a-abd35ed248d2",
+      "name": "Responder error pedido"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.BACKOFFICE_URL }}/pedidos/{{ $json.entidad_id }}/estado",
+        "options": {
+          "timeout": 10000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ \"estado\": $json.payload.estado }) }}"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        60,
+        220
+      ],
+      "id": "6407f2d3-f333-4b86-9645-e1aad4dd1f99",
+      "name": "HTTP cambiar estado",
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Validar payload').item.json;\nconst res = $input.first().json || {};\nconst ok = res.ok === true;\nconst estado = base.payload.estado;\nconst detalle = ok ? 'estado -> ' + estado : 'respuesta inesperada del back-office';\nconst duracion = Date.now() - base.inicio_ms;\n\nreturn [{\n  json: {\n    http_status: ok ? 200 : 502,\n    respuesta: {\n      ok: ok,\n      evento: base.evento,\n      pedido_id: base.entidad_id,\n      estado: estado,\n      execution_id: base.execution_id,\n    },\n    log: {\n      execution_id: base.execution_id,\n      evento: base.evento,\n      pedido_id: base.entidad_id,\n      resultado: ok ? 'correcto' : 'error',\n      codigo_error: ok ? null : 'BACKOFFICE_RESPUESTA',\n      detalle: detalle,\n      duracion_ms: duracion,\n      origen: 'n8n',\n    },\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        220
+      ],
+      "id": "99601dbd-0fec-4e4f-9e28-1d303e6a5a0e",
+      "name": "Evaluar estado"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKOFFICE_URL }}/logs",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.log) }}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        220
+      ],
+      "id": "c68bb4d4-beff-4d6e-962d-dede66a6d5da",
+      "name": "Log estado",
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Evaluar estado').item.json.respuesta }}",
+        "options": {
+          "responseCode": "={{ Number($('Evaluar estado').item.json.http_status) }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        780,
+        220
+      ],
+      "id": "adfedcea-477d-44f8-b512-6aefdba2d62e",
+      "name": "Responder estado"
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Validar payload').item.json;\nconst err = $input.first().json || {};\n\n// n8n entrega el error del nodo HTTP con formas distintas según la versión:\n// a veces { error: { httpCode, message } } y a veces { error: \"texto\" }.\nconst detalleError = typeof err.error === 'string'\n  ? err.error\n  : (err.error && err.error.message) || err.message || 'Error desconocido';\n\nconst status = Number(\n  err.statusCode ||\n  err.httpCode ||\n  (err.error && err.error.httpCode) ||\n  (err.error && err.error.statusCode) ||\n  (err.error && err.error.status) ||\n  0\n);\n\nconst esTimeout = /timeout|timed out|ETIMEDOUT|aborted|ECONNRESET/i.test(detalleError);\nlet httpStatus = 502;\nlet codigo = 'BACKOFFICE_5XX';\n\nif (status === 404) {\n  httpStatus = 404;\n  codigo = 'BACKOFFICE_404';\n} else if (status === 422) {\n  httpStatus = 422;\n  codigo = 'BACKOFFICE_422';\n} else if (esTimeout) {\n  httpStatus = 504;\n  codigo = 'BACKOFFICE_TIMEOUT';\n}\n\nconst duracion = Date.now() - base.inicio_ms;\nconst detalle = ('Back-office ' + (status || 'sin respuesta') + ': ' + detalleError).slice(0, 500);\nconst pedido = base.evento === 'incident.created'\n  ? (base.payload && base.payload.pedido_id ? base.payload.pedido_id : null)\n  : base.entidad_id;\n\nconst respuesta = {\n  ok: false,\n  evento: base.evento,\n  codigo_error: codigo,\n  execution_id: base.execution_id,\n};\n\nif (base.evento === 'incident.created') {\n  respuesta.incidencia_id = base.entidad_id;\n} else {\n  respuesta.pedido_id = base.entidad_id;\n}\n\nreturn [{\n  json: {\n    http_status: httpStatus,\n    respuesta: respuesta,\n    log: {\n      execution_id: base.execution_id,\n      evento: base.evento,\n      pedido_id: pedido,\n      resultado: 'error',\n      codigo_error: codigo,\n      detalle: detalle,\n      duracion_ms: duracion,\n      origen: 'n8n',\n    },\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        360
+      ],
+      "id": "063dc23b-d3a5-4751-89e3-bd8cef6cac88",
+      "name": "Error estado"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKOFFICE_URL }}/logs",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.log) }}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        360
+      ],
+      "id": "f82d2dd6-3b0b-465f-99ee-72208f8edf4f",
+      "name": "Log error estado",
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.ALERT_TELEGRAM_CHAT_ID, text: '🚨 Integración: ' + $('Error estado').item.json.log.evento + ' | ' + ($('Error estado').item.json.log.codigo_error || 'sin código') + ' | ' + $('Error estado').item.json.log.detalle }) }}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        360
+      ],
+      "id": "85e231a7-2ad0-4d06-b8af-3447c5f2e3d6",
+      "name": "Avisar Telegram estado",
+      "onError": "continueRegularOutput",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Error estado').item.json.respuesta }}",
+        "options": {
+          "responseCode": "={{ Number($('Error estado').item.json.http_status) }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        820,
+        360
+      ],
+      "id": "be9c846f-9d03-4b60-8f6e-913ad8930fa5",
+      "name": "Responder error estado"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKOFFICE_URL }}/incidencias",
+        "options": {
+          "timeout": 10000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        60,
+        560
+      ],
+      "id": "eb59c063-f55a-4463-b699-e9d63da995f0",
+      "name": "HTTP crear incidencia",
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Validar payload').item.json;\nconst res = $input.first().json || {};\nconst duplicado = Boolean(res.aviso);\nconst ok = res.ok === true || duplicado;\nconst detalle = duplicado ? 'duplicado ignorado' : 'incidencia creada';\nconst duracion = Date.now() - base.inicio_ms;\n\nreturn [{\n  json: {\n    http_status: duplicado ? 200 : 201,\n    respuesta: {\n      ok: ok,\n      duplicado: duplicado,\n      evento: base.evento,\n      incidencia_id: base.entidad_id,\n      execution_id: base.execution_id,\n    },\n    log: {\n      execution_id: base.execution_id,\n      evento: base.evento,\n      pedido_id: base.payload.pedido_id || null,\n      resultado: ok ? 'correcto' : 'error',\n      codigo_error: ok ? null : 'BACKOFFICE_RESPUESTA',\n      detalle: detalle,\n      duracion_ms: duracion,\n      origen: 'n8n',\n    },\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        560
+      ],
+      "id": "0dc78d47-1742-4c29-b0e4-91d1da72f7b0",
+      "name": "Evaluar incidencia"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKOFFICE_URL }}/logs",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.log) }}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        560
+      ],
+      "id": "593e8b04-6af3-4fd3-a724-64cef0106c6b",
+      "name": "Log incidencia",
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Evaluar incidencia').item.json.respuesta }}",
+        "options": {
+          "responseCode": "={{ Number($('Evaluar incidencia').item.json.http_status) }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        780,
+        560
+      ],
+      "id": "803dd3ed-0ff9-488c-9cc3-9fd3802d13ba",
+      "name": "Responder incidencia"
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Validar payload').item.json;\nconst err = $input.first().json || {};\n\n// n8n entrega el error del nodo HTTP con formas distintas según la versión:\n// a veces { error: { httpCode, message } } y a veces { error: \"texto\" }.\nconst detalleError = typeof err.error === 'string'\n  ? err.error\n  : (err.error && err.error.message) || err.message || 'Error desconocido';\n\nconst status = Number(\n  err.statusCode ||\n  err.httpCode ||\n  (err.error && err.error.httpCode) ||\n  (err.error && err.error.statusCode) ||\n  (err.error && err.error.status) ||\n  0\n);\n\nconst esTimeout = /timeout|timed out|ETIMEDOUT|aborted|ECONNRESET/i.test(detalleError);\nlet httpStatus = 502;\nlet codigo = 'BACKOFFICE_5XX';\n\nif (status === 404) {\n  httpStatus = 404;\n  codigo = 'BACKOFFICE_404';\n} else if (status === 422) {\n  httpStatus = 422;\n  codigo = 'BACKOFFICE_422';\n} else if (esTimeout) {\n  httpStatus = 504;\n  codigo = 'BACKOFFICE_TIMEOUT';\n}\n\nconst duracion = Date.now() - base.inicio_ms;\nconst detalle = ('Back-office ' + (status || 'sin respuesta') + ': ' + detalleError).slice(0, 500);\nconst pedido = base.evento === 'incident.created'\n  ? (base.payload && base.payload.pedido_id ? base.payload.pedido_id : null)\n  : base.entidad_id;\n\nconst respuesta = {\n  ok: false,\n  evento: base.evento,\n  codigo_error: codigo,\n  execution_id: base.execution_id,\n};\n\nif (base.evento === 'incident.created') {\n  respuesta.incidencia_id = base.entidad_id;\n} else {\n  respuesta.pedido_id = base.entidad_id;\n}\n\nreturn [{\n  json: {\n    http_status: httpStatus,\n    respuesta: respuesta,\n    log: {\n      execution_id: base.execution_id,\n      evento: base.evento,\n      pedido_id: pedido,\n      resultado: 'error',\n      codigo_error: codigo,\n      detalle: detalle,\n      duracion_ms: duracion,\n      origen: 'n8n',\n    },\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        700
+      ],
+      "id": "1f573524-744d-4b0c-a685-44b226c5e4fb",
+      "name": "Error incidencia"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKOFFICE_URL }}/logs",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.log) }}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        540,
+        700
+      ],
+      "id": "66936bdf-859e-4c70-9f15-49a7e1b3e8cc",
+      "name": "Log error incidencia",
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.ALERT_TELEGRAM_CHAT_ID, text: '🚨 Integración: ' + $('Error incidencia').item.json.log.evento + ' | ' + ($('Error incidencia').item.json.log.codigo_error || 'sin código') + ' | ' + $('Error incidencia').item.json.log.detalle }) }}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        700
+      ],
+      "id": "bc3f2839-946c-41a5-81de-2f89bf4d3710",
+      "name": "Avisar Telegram incidencia",
+      "onError": "continueRegularOutput",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Error incidencia').item.json.respuesta }}",
+        "options": {
+          "responseCode": "={{ Number($('Error incidencia').item.json.http_status) }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        820,
+        700
+      ],
+      "id": "cf448bc3-605f-4892-bdfb-41aa66b037aa",
+      "name": "Responder error incidencia"
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $('Validar payload').item.json;\nconst detalle = base.errores.join('; ');\nconst duracion = Date.now() - base.inicio_ms;\nconst pedido = base.evento === 'incident.created'\n  ? (base.payload && base.payload.pedido_id ? base.payload.pedido_id : null)\n  : base.entidad_id;\n\nreturn [{\n  json: {\n    http_status: 422,\n    respuesta: {\n      ok: false,\n      evento: base.evento,\n      errores: base.errores,\n      execution_id: base.execution_id,\n    },\n    log: {\n      execution_id: base.execution_id,\n      evento: base.evento,\n      pedido_id: pedido,\n      resultado: 'error',\n      codigo_error: 'VALIDACION',\n      detalle: detalle,\n      duracion_ms: duracion,\n      origen: 'n8n',\n    },\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -180,
+        760
+      ],
+      "id": "a72b92c3-3cbe-4eca-a5d3-7903b30bb8c8",
+      "name": "Preparar error validación"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKOFFICE_URL }}/logs",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.log) }}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        60,
+        760
+      ],
+      "id": "2263ee2c-6b89-4f80-be30-2ebf84eeabc2",
+      "name": "Log validación",
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $env.ALERT_TELEGRAM_CHAT_ID, text: '🚨 Integración: ' + $('Preparar error validación').item.json.log.evento + ' | ' + ($('Preparar error validación').item.json.log.codigo_error || 'sin código') + ' | ' + $('Preparar error validación').item.json.log.detalle }) }}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        200,
+        760
+      ],
+      "id": "a7a48364-4754-4af6-9a08-62205df15aa7",
+      "name": "Avisar Telegram validación",
+      "onError": "continueRegularOutput",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Preparar error validación').item.json.respuesta }}",
+        "options": {
+          "responseCode": "={{ Number($('Preparar error validación').item.json.http_status) }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        340,
+        760
+      ],
+      "id": "fba08653-08f7-42ca-89ad-f05819f5f0c7",
+      "name": "Responder 422"
+    },
+    {
+      "parameters": {
+        "content": "## Contrato de integración\n\nDocumento: `docs/contrato-integracion.md`\n\n- Eventos: `order.created`, `order.status_changed`, `incident.created`.\n- Valida tipos, campos obligatorios, email, importe, líneas y estados.\n- Idempotencia por `pedido_id` / `incidencia_id`: el back-office responde `aviso` y aquí se registra como duplicado.\n- Cada ejecución se registra en `POST /logs` con `origen: n8n`.",
+        "height": 220,
+        "width": 520,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -900,
+        -180
+      ],
+      "id": "fed5d9ff-c3b5-4247-a3b5-b4d2652e46eb",
+      "name": "Nota contrato"
+    },
+    {
+      "parameters": {
+        "content": "## Códigos de error\n\n| Código | HTTP | Cuándo |\n| --- | --- | --- |\n| `VALIDACION` | 422 | Falta un campo o un tipo no cuadra |\n| `BACKOFFICE_404` | 404 | Pedido o incidencia inexistente |\n| `BACKOFFICE_422` | 422 | El back-office rechaza el payload |\n| `BACKOFFICE_5XX` | 502 | Back-office caído o error interno |\n| `BACKOFFICE_TIMEOUT` | 504 | Sin respuesta en 10 s |",
+        "height": 190,
+        "width": 520,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -180,
+        900
+      ],
+      "id": "17fd95d2-885e-4e85-9af8-10107db53f74",
+      "name": "Nota errores"
+    },
+    {
+      "parameters": {
+        "content": "## Entradas\n\nLa tienda envía `order.*`.\n\nEl bot de Telegram de P3 envía `incident.created` al mismo webhook.\n\nTodo entra por `POST /webhook/integracion-tarea2`.",
+        "height": 190,
+        "width": 260,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        40
+      ],
+      "id": "830b04a5-cee1-4d75-96c1-d161513fed16",
+      "name": "Nota eventos"
+    }
+  ],
+  "connections": {
+    "Webhook tienda": {
+      "main": [
+        [
+          {
+            "node": "Validar payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar payload": {
+      "main": [
+        [
+          {
+            "node": "¿Payload válido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Payload válido?": {
+      "main": [
+        [
+          {
+            "node": "Enrutar por evento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar error validación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrutar por evento": {
+      "main": [
+        [
+          {
+            "node": "HTTP crear pedido",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP cambiar estado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP crear incidencia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP crear pedido": {
+      "main": [
+        [
+          {
+            "node": "Evaluar pedido",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluar pedido": {
+      "main": [
+        [
+          {
+            "node": "Log pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log pedido": {
+      "main": [
+        [
+          {
+            "node": "Responder pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error pedido": {
+      "main": [
+        [
+          {
+            "node": "Log error pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log error pedido": {
+      "main": [
+        [
+          {
+            "node": "Avisar Telegram pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Telegram pedido": {
+      "main": [
+        [
+          {
+            "node": "Responder error pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP cambiar estado": {
+      "main": [
+        [
+          {
+            "node": "Evaluar estado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluar estado": {
+      "main": [
+        [
+          {
+            "node": "Log estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log estado": {
+      "main": [
+        [
+          {
+            "node": "Responder estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error estado": {
+      "main": [
+        [
+          {
+            "node": "Log error estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log error estado": {
+      "main": [
+        [
+          {
+            "node": "Avisar Telegram estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Telegram estado": {
+      "main": [
+        [
+          {
+            "node": "Responder error estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP crear incidencia": {
+      "main": [
+        [
+          {
+            "node": "Evaluar incidencia",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error incidencia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluar incidencia": {
+      "main": [
+        [
+          {
+            "node": "Log incidencia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log incidencia": {
+      "main": [
+        [
+          {
+            "node": "Responder incidencia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error incidencia": {
+      "main": [
+        [
+          {
+            "node": "Log error incidencia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log error incidencia": {
+      "main": [
+        [
+          {
+            "node": "Avisar Telegram incidencia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Telegram incidencia": {
+      "main": [
+        [
+          {
+            "node": "Responder error incidencia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar error validación": {
+      "main": [
+        [
+          {
+            "node": "Log validación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log validación": {
+      "main": [
+        [
+          {
+            "node": "Avisar Telegram validación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avisar Telegram validación": {
+      "main": [
+        [
+          {
+            "node": "Responder 422",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "timezone": "Europe/Madrid"
+  },
+  "pinData": {},
+  "meta": {
+    "generatedBy": "n8n/build-workflow.mjs",
+    "contract": "docs/contrato-integracion.md"
+  }
+}

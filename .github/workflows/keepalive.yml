@@ -1,0 +1,35 @@
+name: Keep-alive de Render
+
+# Render Free duerme los servicios tras 15 minutos sin tráfico. n8n y el
+# back-office tardan decenas de segundos en despertar, más que el timeout de
+# 5 s que usa la tienda. Este workflow les hace un ping cada 10 minutos para
+# que la demo y las pruebas no dependan del arranque en frío.
+#
+# Configura en Settings -> Variables -> Actions:
+#   N8N_URL          = https://tu-servicio.onrender.com
+#   BACKOFFICE_URL   = https://backoffice-tarea2.onrender.com
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    name: Despertar servicios
+    runs-on: ubuntu-latest
+    steps:
+      - name: n8n
+        if: vars.N8N_URL != ''
+        env:
+          N8N_URL: ${{ vars.N8N_URL }}
+        run: curl -fsS --max-time 90 "${N8N_URL}/healthz" > /dev/null || true
+
+      - name: Back-office
+        if: vars.BACKOFFICE_URL != ''
+        env:
+          BACKOFFICE_URL: ${{ vars.BACKOFFICE_URL }}
+        run: curl -fsS --max-time 90 "${BACKOFFICE_URL}/healthz" > /dev/null || true

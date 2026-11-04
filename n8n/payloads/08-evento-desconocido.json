@@ -1,0 +1,4 @@
+{
+  "evento": "order.deleted",
+  "pedido_id": "ORD-001"
+}

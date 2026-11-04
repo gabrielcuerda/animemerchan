@@ -1,0 +1,6 @@
+{
+  "evento": "order.status_changed",
+  "pedido_id": "ORD-001",
+  "estado_anterior": "creado",
+  "estado": "enviado"
+}

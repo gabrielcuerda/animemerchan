@@ -1,0 +1,80 @@
+# Plantilla de referencia para Render Blueprint.
+#
+# Render busca `render.yaml` en la RAÍZ del repositorio. Si quieres usar esta
+# plantilla, copia este contenido a /render.yaml. La opción recomendada sigue
+# siendo crear el Web Service desde la imagen oficial en el panel de Render.
+#
+# No pongas secretos aquí: las claves marcadas con `sync: false` se piden en
+# el panel al crear el Blueprint.
+
+services:
+  - type: web
+    name: n8n-tarea2
+    runtime: image
+    plan: free
+    region: frankfurt
+    image:
+      url: docker.io/n8nio/n8n:latest
+    healthCheckPath: /healthz
+    autoDeployTrigger: off
+    envVars:
+      - key: PORT
+        value: "5678"
+      - key: N8N_PORT
+        value: "5678"
+      - key: N8N_PROTOCOL
+        value: "https"
+      - key: N8N_PROXY_HOPS
+        value: "1"
+      - key: N8N_HOST
+        sync: false
+      - key: N8N_EDITOR_BASE_URL
+        sync: false
+      - key: N8N_WEBHOOK_URL
+        sync: false
+      - key: N8N_ENCRYPTION_KEY
+        generateValue: true
+      - key: N8N_SECURE_COOKIE
+        value: "true"
+      - key: N8N_BLOCK_ENV_ACCESS_IN_NODE
+        value: "false"
+      - key: DB_TYPE
+        value: "postgresdb"
+      - key: DB_POSTGRESDB_HOST
+        sync: false
+      - key: DB_POSTGRESDB_PORT
+        value: "5432"
+      - key: DB_POSTGRESDB_DATABASE
+        value: "postgres"
+      - key: DB_POSTGRESDB_USER
+        sync: false
+      - key: DB_POSTGRESDB_PASSWORD
+        sync: false
+      - key: DB_POSTGRESDB_SCHEMA
+        value: "public"
+      - key: DB_POSTGRESDB_SSL_ENABLED
+        value: "true"
+      - key: DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED
+        value: "false"
+      - key: DB_POSTGRESDB_POOL_SIZE
+        value: "2"
+      - key: BACKOFFICE_URL
+        value: "https://backoffice-tarea2.onrender.com"
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: ALERT_TELEGRAM_CHAT_ID
+        sync: false
+      - key: GENERIC_TIMEZONE
+        value: "Europe/Madrid"
+      - key: TZ
+        value: "Europe/Madrid"
+      - key: EXECUTIONS_DATA_PRUNE
+        value: "true"
+      - key: EXECUTIONS_DATA_MAX_AGE
+        value: "168"
+      - key: EXECUTIONS_DATA_SAVE_ON_SUCCESS
+        value: "all"
+      - key: EXECUTIONS_DATA_SAVE_ON_ERROR
+        value: "all"
+      - key: N8N_DIAGNOSTICS_ENABLED
+        value: "false"
