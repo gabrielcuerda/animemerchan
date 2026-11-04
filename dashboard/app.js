@@ -10,7 +10,6 @@ import {
   resumenPedidos,
   resumenProductos,
   seriePorDia,
-  tasaConversion,
   tiempoMedioResolucion,
 } from "./metricas.js";
 
@@ -247,7 +246,6 @@ function renderizar(datos) {
   const logs = resumenLogs(datos.logs);
   const decisiones = resumenDecisiones(datos.decisiones);
   const productos = resumenProductos(datos.productos);
-  const conversion = tasaConversion(datos.logs, datos.pedidos);
   const resolucion = tiempoMedioResolucion(datos.resolucion);
 
   // Indicadores
@@ -292,14 +290,6 @@ function renderizar(datos) {
     latencia === null
       ? "Pendiente: n8n debe registrar duracion_ms"
       : `Media de ${formatearNumero(logs.conDuracion)} ejecuciones`;
-
-  const kpiConversion = $("kpi-conversion");
-  kpiConversion.textContent = formatearPorcentaje(conversion);
-  kpiConversion.classList.toggle("kpi-aviso", conversion === null);
-  $("nota-conversion").textContent =
-  conversion === null
-    ? "Sin datos de checkout.started"
-    : "Pedidos creados / checkouts";
 
  const kpiResolucion = $("kpi-resolucion");
    kpiResolucion.textContent =
