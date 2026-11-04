@@ -307,9 +307,11 @@ envía un mensaje a **Telegram** al chat configurado en
 - si ya existía o es nueva
 
 Es un aviso **interno para el equipo**, no un mensaje al cliente. El cliente de
-la tienda no tiene `telegram_chat_id`, así que la incidencia web se guarda en el
-back-office con ese campo a `null`; la respuesta al cliente tendría que ir por
-email o desde el back-office.
+la tienda no tiene `telegram_chat_id`, así que la incidencia web se guarda con el
+chat de demo configurado en `INCIDENCIAS_TELEGRAM_CHAT_ID` (por defecto
+`7683478497`) o con `null` si no se configura. Ese chat no es el del cliente: es
+el del equipo/pruebas. Un cliente real de Telegram trae su propio
+`telegram_chat_id` en el payload.
 
 El aviso también se dispara para las incidencias que nacen en Telegram y pasan
 por este workflow. Si la Persona 3 usa el mismo chat para la aprobación, ese

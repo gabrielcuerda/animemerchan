@@ -170,6 +170,14 @@ export type DatosIncidencia = {
   tipo: string;
   descripcion: string;
   fecha: string;
+  /**
+   * Chat de Telegram asociado a la incidencia.
+   *
+   * En una incidencia que nace en Telegram es el chat del cliente. En la
+   * incidencia web de la demo se usa el chat del equipo/pruebas porque el
+   * cliente no tiene un chat de Telegram conocido.
+   */
+  telegramChatId?: string | null;
 };
 
 export type ResultadoIncidencia = {
@@ -214,6 +222,7 @@ export async function enviarIncidenciaIntegracion(
         pedido_id: datos.pedidoId,
         cliente_email: datos.clienteEmail,
         cliente_nombre: datos.clienteNombre ?? null,
+        telegram_chat_id: datos.telegramChatId ?? null,
         tipo: datos.tipo,
         descripcion: datos.descripcion,
         estado: "abierta",

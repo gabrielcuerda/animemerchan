@@ -374,6 +374,11 @@ El formulario de incidencias exige sesión y comprueba en servidor que el pedido
 pertenece al usuario antes de enviar el evento. La tienda no guarda la
 incidencia: el back-office es el sistema de registro.
 
+Para la demo, las incidencias web se asocian a `INCIDENCIAS_TELEGRAM_CHAT_ID`
+(por defecto `7683478497`, el chat del equipo/pruebas), porque el cliente web no
+tiene un chat de Telegram. El aviso interno de n8n sigue saliendo por
+`ALERT_TELEGRAM_CHAT_ID`.
+
 En local se puede apuntar directamente al back-office
 (`http://localhost:4000/pedidos`) para probar sin n8n. En producción apunta al
 webhook de n8n, que valida, transforma y enruta:

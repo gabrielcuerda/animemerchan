@@ -100,6 +100,13 @@ export async function crearIncidencia(
 
   const incidenciaId = `INC-${randomUUID()}`;
 
+  // Demo: el cliente web no tiene un chat de Telegram conocido. Asociamos la
+  // incidencia al chat del equipo/pruebas para que P3 pueda validarla y para
+  // que el back-office no guarde null. Se puede cambiar sin tocar código con
+  // INCIDENCIAS_TELEGRAM_CHAT_ID.
+  const telegramChatId =
+    process.env.INCIDENCIAS_TELEGRAM_CHAT_ID?.trim() || "7683478497";
+
   const resultado = await enviarIncidenciaIntegracion({
     incidenciaId,
     pedidoId,
@@ -108,6 +115,7 @@ export async function crearIncidencia(
     tipo,
     descripcion,
     fecha: new Date().toISOString(),
+    telegramChatId,
   });
 
   if (!resultado.ok) {
