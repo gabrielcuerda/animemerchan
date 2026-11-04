@@ -32,6 +32,11 @@ export default async function AccountPage() {
       description: translate(lang, "account.card.ordersDesc"),
     },
     {
+      href: "/account/incidencias",
+      title: translate(lang, "account.card.incidents"),
+      description: translate(lang, "account.card.incidentsDesc"),
+    },
+    {
       href: "/account/wishlist",
       title: translate(lang, "account.card.wishlist"),
       description: translate(lang, "account.card.wishlistDesc"),

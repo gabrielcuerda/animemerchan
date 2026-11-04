@@ -142,7 +142,7 @@ export async function enviarEstadoIntegracion(
           : {}),
         estado: ESTADOS[estado] ?? estado,
       }),
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(15000),
     });
 
     if (respuesta.ok) {
@@ -159,5 +159,118 @@ export async function enviarEstadoIntegracion(
       "[integracion] Error enviando el cambio de estado al back-office:",
       error,
     );
+  }
+}
+
+export type DatosIncidencia = {
+  incidenciaId: string;
+  pedidoId: string;
+  clienteEmail: string;
+  clienteNombre?: string | null;
+  tipo: string;
+  descripcion: string;
+  fecha: string;
+};
+
+export type ResultadoIncidencia = {
+  ok: boolean;
+  incidenciaId?: string;
+  duplicado?: boolean;
+  error?: string;
+  errores?: string[];
+};
+
+/**
+ * Envía una incidencia creada desde la tienda (Escenario 3 por web).
+ *
+ * El destinatario es el mismo webhook que usan los pedidos: n8n valida el
+ * payload, crea la incidencia en el back-office y registra la ejecución. La
+ * tienda no escribe la incidencia en su propia base de datos: el sistema de
+ * registro es el back-office.
+ *
+ * A diferencia de `enviarPedidoIntegracion`, aquí sí devolvemos el resultado:
+ * el formulario necesita decirle al cliente si la incidencia se ha registrado.
+ * Si n8n o el back-office fallan, no se inventa un éxito.
+ */
+export async function enviarIncidenciaIntegracion(
+  datos: DatosIncidencia,
+): Promise<ResultadoIncidencia> {
+  const url = process.env.INTEGRACION_WEBHOOK_URL;
+
+  if (!url) {
+    console.warn(
+      "[integracion] INTEGRACION_WEBHOOK_URL no configurada; incidencia NO enviada.",
+    );
+    return { ok: false, error: "La integración no está configurada." };
+  }
+
+  try {
+    const respuesta = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        evento: "incident.created",
+        incidencia_id: datos.incidenciaId,
+        pedido_id: datos.pedidoId,
+        cliente_email: datos.clienteEmail,
+        cliente_nombre: datos.clienteNombre ?? null,
+        tipo: datos.tipo,
+        descripcion: datos.descripcion,
+        estado: "abierta",
+        prioridad: null,
+        fecha: datos.fecha,
+      }),
+      // Más margen que en los pedidos: el cliente está esperando y el
+      // back-office de Render puede arrancar en frío.
+      signal: AbortSignal.timeout(20000),
+    });
+
+    const cuerpo = (await respuesta.json().catch(() => null)) as {
+      ok?: boolean;
+      incidencia_id?: string;
+      duplicado?: boolean;
+      errores?: string[];
+      codigo_error?: string;
+      error?: string;
+    } | null;
+
+    if (respuesta.ok && cuerpo?.ok) {
+      console.log(
+        `[integracion] Incidencia ${datos.incidenciaId} enviada a la integración.`,
+      );
+
+      return {
+        ok: true,
+        incidenciaId: cuerpo.incidencia_id ?? datos.incidenciaId,
+        duplicado: Boolean(cuerpo.duplicado),
+      };
+    }
+
+    if (respuesta.status === 422 && Array.isArray(cuerpo?.errores)) {
+      return {
+        ok: false,
+        error: "La incidencia no es válida.",
+        errores: cuerpo.errores,
+      };
+    }
+
+    console.error(
+      `[integracion] El receptor devolvió ${respuesta.status} para la incidencia ${datos.incidenciaId}.`,
+      cuerpo,
+    );
+
+    return {
+      ok: false,
+      error:
+        cuerpo?.error ??
+        "No hemos podido registrar la incidencia. Inténtalo de nuevo.",
+    };
+  } catch (error) {
+    console.error("[integracion] Error enviando la incidencia:", error);
+    return {
+      ok: false,
+      error:
+        "No hemos podido conectar con el servicio de incidencias. Inténtalo de nuevo.",
+    };
   }
 }
