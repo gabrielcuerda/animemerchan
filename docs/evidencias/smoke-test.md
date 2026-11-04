@@ -14,6 +14,33 @@ Esta prueba **no sustituye** a las capturas del back-office real. Sirve para
 dejar constancia de que el workflow importa y se ejecuta, y de que las
 expresiones, los códigos HTTP y el logging funcionan.
 
+## Validación adicional en n8n 1.113.3
+
+El workflow también se creó y activó en **n8n 1.113.3** (Render Free) mediante
+la API pública, porque el editor no mostraba la opción de importar archivo.
+
+- La API de 1.113.3 exige `settings: {}` y rechaza propiedades extra dentro de
+  `settings`.
+- Las versiones de nodo compatibles son **Webhook 2.1** e **IF 2.2**; el
+  export se ajustó para que funcione tanto en 1.x como en 2.x.
+- La activación se hizo con `POST /api/v1/workflows/{id}/activate`.
+
+Resultados contra el back-office real:
+
+| Petición | HTTP | Resultado |
+| --- | --- | --- |
+| `01-pedido-valido.json` con `ORD-001` ya existente | `200` | `duplicado: true` |
+| Pedido nuevo `ORD-002` | `201` | `pedido creado` |
+| `03-pedido-invalido.json` | `422` | `VALIDACION` |
+| `04-estado-valido.json` | `200` | `estado: enviado` |
+| `05-estado-invalido.json` | `422` | `VALIDACION` |
+| `06-incidencia-valida.json` con `INC-001` existente | `200` | `duplicado: true` |
+| `07-incidencia-invalida.json` | `422` | `VALIDACION` |
+| `08-evento-desconocido.json` | `422` | `VALIDACION` |
+
+Los logs del back-office muestran `origen: "n8n"` y `duracion_ms` en todas las
+ejecuciones (por ejemplo, 210 ms para `ORD-002`).
+
 ## Resultados
 
 | Petición | HTTP | Cuerpo observado |

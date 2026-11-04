@@ -554,7 +554,7 @@ function sticky(nombre, posicion, ancho, alto, contenido) {
 nodo(
   "Webhook tienda",
   "n8n-nodes-base.webhook",
-  2.2,
+  2.1,
   [-900, 300],
   {
     httpMethod: "POST",
@@ -569,13 +569,13 @@ nodo("Validar payload", "n8n-nodes-base.code", 2, [-660, 300], {
   jsCode: validarPayload,
 });
 
-nodo("¿Payload válido?", "n8n-nodes-base.if", 2.4, [-420, 300], {
+nodo("¿Payload válido?", "n8n-nodes-base.if", 2.2, [-420, 300], {
   conditions: {
     options: {
       caseSensitive: true,
       leftValue: "",
       typeValidation: "strict",
-      version: 4,
+      version: 2,
     },
     conditions: [
       {

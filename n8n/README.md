@@ -128,6 +128,52 @@ Copia [`/.env.example`](./.env.example) y rellena los valores. Las claves:
 3. Si Render tarda en arrancar, mira los logs. Los errores típicos son de
    puerto (`PORT`/`N8N_PORT`) o de conexión a Supabase (SSL/credenciales).
 
+### 2.5 Si usas n8n 1.x en Render Free
+
+Render Free tiene 512 MB y n8n 2.x puede quedarse sin memoria al abrir el
+editor. Si pasa, usa **n8n 1.113.3**:
+
+- Imagen: `docker.io/n8nio/n8n:1.113.3`.
+- `WEBHOOK_URL=https://tu-servicio.onrender.com/` (en 1.x no existe
+  `N8N_WEBHOOK_URL`).
+- No definas `N8N_RUNNERS_*`: en 1.x los nodos Code se ejecutan en el proceso
+  principal.
+- Si el editor muestra `Connection lost`, añade `N8N_PUSH_BACKEND=sse`.
+- El workflow exportado usa **Webhook 2.1** e **IF 2.2** para ser compatible
+  con 1.113.3 y con 2.x.
+
+### 2.6 Importar por API si la UI no muestra "Import from File"
+
+En algunas versiones 1.x el menú de importación no aparece. La API siempre
+funciona:
+
+1. En n8n: **Settings → API → Create API Key**.
+2. Prepara el JSON (la API de 1.113.3 exige `settings: {}` y rechaza
+   propiedades extra dentro de `settings`):
+
+   ```bash
+   node -e "const w=require('./workflow-integracion.json'); const fs=require('fs'); fs.writeFileSync('/tmp/wf-api.json', JSON.stringify({name:w.name,nodes:w.nodes,connections:w.connections,settings:{}}, null, 2));"
+   ```
+
+3. Crea el workflow:
+
+   ```bash
+   curl -X POST "https://tu-servicio.onrender.com/api/v1/workflows" \
+     -H "X-N8N-API-KEY: TU_API_KEY" \
+     -H "Content-Type: application/json" \
+     --data @/tmp/wf-api.json
+   ```
+
+4. Actívalo con el `id` que devuelve la respuesta:
+
+   ```bash
+   curl -X POST "https://tu-servicio.onrender.com/api/v1/workflows/TU_ID/activate" \
+     -H "X-N8N-API-KEY: TU_API_KEY"
+   ```
+
+5. La UI puede seguir mostrando `Connection lost` por SSE, pero el workflow
+   queda guardado y activo. Compruébalo con el webhook.
+
 ## 3. Importar el workflow
 
 1. En n8n: **Workflows → Import from File**.

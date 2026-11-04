@@ -271,6 +271,12 @@ test("un 500 del back-office se traduce a BACKOFFICE_5XX y 502", () => {
 // Estructura del workflow
 // ---------------------------------------------------------------
 
+test("usa versiones de nodo compatibles con n8n 1.113.3", () => {
+  assert.equal(nodo("Webhook tienda").typeVersion, 2.1);
+  assert.equal(nodo("¿Payload válido?").typeVersion, 2.2);
+  assert.equal(nodo("¿Payload válido?").parameters.conditions.options.version, 2);
+});
+
 test("el workflow contiene los nodos y tipos exigidos", () => {
   const tipos = new Set(workflow.nodes.map((n) => n.type));
   const exigidos = [

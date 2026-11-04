@@ -9,14 +9,14 @@
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.2,
+      "typeVersion": 2.1,
       "position": [
         -900,
         300
       ],
-      "id": "8f4b2ecf-6b69-45e2-a5c5-4e7b8414fc1f",
+      "id": "e065db36-3241-4e60-a924-fed440b79719",
       "name": "Webhook tienda",
-      "webhookId": "64fe95c6-c2ea-4784-ae42-cf5c67a3e30f"
+      "webhookId": "16c27b04-fcb1-4a7d-b84b-0b9cc949f4da"
     },
     {
       "parameters": {
@@ -28,7 +28,7 @@
         -660,
         300
       ],
-      "id": "d6331c48-992c-44d8-a838-4934a7fc1076",
+      "id": "3dea6503-34c8-43b3-976c-7b87308f358d",
       "name": "Validar payload"
     },
     {
@@ -38,11 +38,11 @@
             "caseSensitive": true,
             "leftValue": "",
             "typeValidation": "strict",
-            "version": 4
+            "version": 2
           },
           "conditions": [
             {
-              "id": "84541556-b12e-4282-8fe2-81023ee42dc5",
+              "id": "b081dbfc-54a3-4c02-bff0-f28acc07eee0",
               "leftValue": "={{ $json.valido }}",
               "rightValue": false,
               "operator": {
@@ -57,12 +57,12 @@
         "options": {}
       },
       "type": "n8n-nodes-base.if",
-      "typeVersion": 2.4,
+      "typeVersion": 2.2,
       "position": [
         -420,
         300
       ],
-      "id": "a3e6f53a-5263-4964-acf6-54ac86af0162",
+      "id": "befce48d-d91e-4bc0-9336-af6d1fcacc4b",
       "name": "¿Payload válido?"
     },
     {
@@ -79,7 +79,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "e3a3622e-4d57-4870-8965-eace2638c44d",
+                    "id": "bbaa1685-a184-4b81-99ec-92147a7a1cec",
                     "leftValue": "={{ $json.evento }}",
                     "rightValue": "order.created",
                     "operator": {
@@ -103,7 +103,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "4daa86ea-465b-435f-a08b-4eb525b21745",
+                    "id": "f1997949-82e0-4db5-b291-39f295121381",
                     "leftValue": "={{ $json.evento }}",
                     "rightValue": "order.status_changed",
                     "operator": {
@@ -127,7 +127,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "c9e35203-5793-41a2-bc21-bced80eb8bd5",
+                    "id": "22bc0792-2837-4261-b1cc-51de8f6e2f98",
                     "leftValue": "={{ $json.evento }}",
                     "rightValue": "incident.created",
                     "operator": {
@@ -153,7 +153,7 @@
         -180,
         120
       ],
-      "id": "c2136685-c2b9-4f30-b7da-163f5159d2a4",
+      "id": "2ede8667-4f4a-40d6-af72-c25ba291204f",
       "name": "Enrutar por evento"
     },
     {
@@ -173,7 +173,7 @@
         60,
         -120
       ],
-      "id": "dd3f1f5b-a883-4e54-913d-a75f456f6257",
+      "id": "2bca1e31-1dba-4c10-9738-ede1c1e57c0f",
       "name": "HTTP crear pedido",
       "onError": "continueErrorOutput",
       "retryOnFail": true,
@@ -190,7 +190,7 @@
         300,
         -120
       ],
-      "id": "a6f8931c-68a1-448d-92d0-62bfdf6013c4",
+      "id": "d696c357-5749-43dd-9f2d-8c453a283563",
       "name": "Evaluar pedido"
     },
     {
@@ -210,7 +210,7 @@
         540,
         -120
       ],
-      "id": "77d57d1e-531d-48a2-a843-01331ee2e082",
+      "id": "be668edf-8ace-495e-b0cb-5443d70a8a3f",
       "name": "Log pedido",
       "onError": "continueRegularOutput",
       "retryOnFail": true,
@@ -239,7 +239,7 @@
         780,
         -120
       ],
-      "id": "f534b10e-2d85-4276-b082-a45221484705",
+      "id": "c9028066-66e0-4e64-a21b-784650b2cf7e",
       "name": "Responder pedido"
     },
     {
@@ -252,7 +252,7 @@
         300,
         20
       ],
-      "id": "31df2356-6ee7-400d-a718-5f95b3172f64",
+      "id": "07a5b1fb-e3d9-4fc1-8a40-3ad8e45a9a60",
       "name": "Error pedido"
     },
     {
@@ -272,7 +272,7 @@
         540,
         20
       ],
-      "id": "f6856374-c6d3-4dbe-8de6-6ae5c0e1480b",
+      "id": "89f6ab60-12e4-4c46-af18-f70594b53f38",
       "name": "Log error pedido",
       "onError": "continueRegularOutput",
       "retryOnFail": true,
@@ -296,7 +296,7 @@
         680,
         20
       ],
-      "id": "cab4118c-2769-418c-a5d7-5f38f00389c8",
+      "id": "77a58943-1052-4fae-a795-7a58efbd2e5b",
       "name": "Avisar Telegram pedido",
       "onError": "continueRegularOutput",
       "retryOnFail": false
@@ -323,7 +323,7 @@
         820,
         20
       ],
-      "id": "71bf257e-dba1-4354-ba92-1c838985320d",
+      "id": "dafd5742-8205-4101-be9a-abd35ed248d2",
       "name": "Responder error pedido"
     },
     {
@@ -343,7 +343,7 @@
         60,
         220
       ],
-      "id": "e744aa3b-d4c2-4668-a617-99c4021bbe4f",
+      "id": "6407f2d3-f333-4b86-9645-e1aad4dd1f99",
       "name": "HTTP cambiar estado",
       "onError": "continueErrorOutput",
       "retryOnFail": true,
@@ -360,7 +360,7 @@
         300,
         220
       ],
-      "id": "9b438ef8-d09a-44df-8140-2a084371f759",
+      "id": "99601dbd-0fec-4e4f-9e28-1d303e6a5a0e",
       "name": "Evaluar estado"
     },
     {
@@ -380,7 +380,7 @@
         540,
         220
       ],
-      "id": "d4729f67-1662-43bf-8f18-ce0051726cfe",
+      "id": "c68bb4d4-beff-4d6e-962d-dede66a6d5da",
       "name": "Log estado",
       "onError": "continueRegularOutput",
       "retryOnFail": true,
@@ -409,7 +409,7 @@
         780,
         220
       ],
-      "id": "7c57f4ce-1d68-47e8-916a-53d015a635c9",
+      "id": "adfedcea-477d-44f8-b512-6aefdba2d62e",
       "name": "Responder estado"
     },
     {
@@ -422,7 +422,7 @@
         300,
         360
       ],
-      "id": "b585ebed-d0e6-4413-b62e-57a680fc92bf",
+      "id": "063dc23b-d3a5-4751-89e3-bd8cef6cac88",
       "name": "Error estado"
     },
     {
@@ -442,7 +442,7 @@
         540,
         360
       ],
-      "id": "2060da83-a248-43a1-87b4-cac1e7e68461",
+      "id": "f82d2dd6-3b0b-465f-99ee-72208f8edf4f",
       "name": "Log error estado",
       "onError": "continueRegularOutput",
       "retryOnFail": true,
@@ -466,7 +466,7 @@
         680,
         360
       ],
-      "id": "a12d0230-ff80-4f0b-8845-fd7f61e06ba8",
+      "id": "85e231a7-2ad0-4d06-b8af-3447c5f2e3d6",
       "name": "Avisar Telegram estado",
       "onError": "continueRegularOutput",
       "retryOnFail": false
@@ -493,7 +493,7 @@
         820,
         360
       ],
-      "id": "fd2ceb3c-83ae-4cfc-af09-1586234972c0",
+      "id": "be9c846f-9d03-4b60-8f6e-913ad8930fa5",
       "name": "Responder error estado"
     },
     {
@@ -513,7 +513,7 @@
         60,
         560
       ],
-      "id": "e2ecabab-6462-4d59-8991-a469efb79a54",
+      "id": "eb59c063-f55a-4463-b699-e9d63da995f0",
       "name": "HTTP crear incidencia",
       "onError": "continueErrorOutput",
       "retryOnFail": true,
@@ -530,7 +530,7 @@
         300,
         560
       ],
-      "id": "4d819a6f-595d-49d7-986d-dac2249e1797",
+      "id": "0dc78d47-1742-4c29-b0e4-91d1da72f7b0",
       "name": "Evaluar incidencia"
     },
     {
@@ -550,7 +550,7 @@
         540,
         560
       ],
-      "id": "902fadf7-1739-429a-8e3c-e5d3ca5e0c10",
+      "id": "593e8b04-6af3-4fd3-a724-64cef0106c6b",
       "name": "Log incidencia",
       "onError": "continueRegularOutput",
       "retryOnFail": true,
@@ -579,7 +579,7 @@
         780,
         560
       ],
-      "id": "bb7ece26-3a86-49fb-8eb4-a337846f634a",
+      "id": "803dd3ed-0ff9-488c-9cc3-9fd3802d13ba",
       "name": "Responder incidencia"
     },
     {
@@ -592,7 +592,7 @@
         300,
         700
       ],
-      "id": "474214ee-c835-41db-82bf-560fc3ce70a5",
+      "id": "1f573524-744d-4b0c-a685-44b226c5e4fb",
       "name": "Error incidencia"
     },
     {
@@ -612,7 +612,7 @@
         540,
         700
       ],
-      "id": "7f1b8c81-72f6-4cf6-80c1-3b471d63edf0",
+      "id": "66936bdf-859e-4c70-9f15-49a7e1b3e8cc",
       "name": "Log error incidencia",
       "onError": "continueRegularOutput",
       "retryOnFail": true,
@@ -636,7 +636,7 @@
         680,
         700
       ],
-      "id": "20c16fc4-0ad7-47cb-9d01-e5d0f93c4cbf",
+      "id": "bc3f2839-946c-41a5-81de-2f89bf4d3710",
       "name": "Avisar Telegram incidencia",
       "onError": "continueRegularOutput",
       "retryOnFail": false
@@ -663,7 +663,7 @@
         820,
         700
       ],
-      "id": "4102c4cf-bea3-44f1-94a7-fe1ad6d33c56",
+      "id": "cf448bc3-605f-4892-bdfb-41aa66b037aa",
       "name": "Responder error incidencia"
     },
     {
@@ -676,7 +676,7 @@
         -180,
         760
       ],
-      "id": "07562018-0c4d-4fde-bb9a-490d417f7afd",
+      "id": "a72b92c3-3cbe-4eca-a5d3-7903b30bb8c8",
       "name": "Preparar error validación"
     },
     {
@@ -696,7 +696,7 @@
         60,
         760
       ],
-      "id": "88bdd991-3321-4ea7-a3f9-973dbf55a17a",
+      "id": "2263ee2c-6b89-4f80-be30-2ebf84eeabc2",
       "name": "Log validación",
       "onError": "continueRegularOutput",
       "retryOnFail": true,
@@ -720,7 +720,7 @@
         200,
         760
       ],
-      "id": "2e7f3463-b535-494e-bd60-4af888cf6b84",
+      "id": "a7a48364-4754-4af6-9a08-62205df15aa7",
       "name": "Avisar Telegram validación",
       "onError": "continueRegularOutput",
       "retryOnFail": false
@@ -747,7 +747,7 @@
         340,
         760
       ],
-      "id": "62d832b0-f68a-4fbb-9d39-7222c9e93b3b",
+      "id": "fba08653-08f7-42ca-89ad-f05819f5f0c7",
       "name": "Responder 422"
     },
     {
@@ -763,7 +763,7 @@
         -900,
         -180
       ],
-      "id": "84462c60-56d1-4922-bcb6-9bfc830a9e44",
+      "id": "fed5d9ff-c3b5-4247-a3b5-b4d2652e46eb",
       "name": "Nota contrato"
     },
     {
@@ -779,7 +779,7 @@
         -180,
         900
       ],
-      "id": "e8084809-30bd-4f95-984d-9e46cf39c893",
+      "id": "17fd95d2-885e-4e85-9af8-10107db53f74",
       "name": "Nota errores"
     },
     {
@@ -795,7 +795,7 @@
         -420,
         40
       ],
-      "id": "661072a3-c509-4265-afb0-e39583a9f6af",
+      "id": "830b04a5-cee1-4d75-96c1-d161513fed16",
       "name": "Nota eventos"
     }
   ],
