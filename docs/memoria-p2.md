@@ -56,7 +56,12 @@ inventar datos y comparar respuestas.
   uno de sus pedidos, el tipo de incidencia y una descripción. El servidor
   comprueba que el pedido pertenece al usuario y envía `incident.created` al
   webhook de n8n. La tienda **no** guarda la incidencia: el back-office es el
-  sistema de registro.
+  sistema de registro. Al crearse, n8n envía un aviso interno al chat del equipo
+  (`ALERT_TELEGRAM_CHAT_ID`) con la referencia, el pedido, el cliente, el tipo y
+  la descripción.
+  Para la demo, la incidencia web se asocia a
+  `INCIDENCIAS_TELEGRAM_CHAT_ID` (por defecto `7683478497`, el chat
+  equipo/pruebas), porque el cliente web no tiene un chat de Telegram.
 - **`/admin/pedidos/[id]`:** el administrador cambia el estado del pedido. La
   acción actualiza Supabase y envía `order.status_changed` con el estado ya
   traducido al vocabulario del back-office (`creado`, `pago_simulado`,
