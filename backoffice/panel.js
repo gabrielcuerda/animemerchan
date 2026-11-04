@@ -18,7 +18,10 @@ function esc(valor) {
 
 function fecha(valor) {
   if (!valor) return "—";
-  return String(valor).replace("T", " ").slice(0, 19);
+  const d = valor instanceof Date ? valor : new Date(valor);
+  if (Number.isNaN(d.getTime())) return String(valor);
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
 }
 
 const TONO = {
