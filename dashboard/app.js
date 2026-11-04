@@ -8,7 +8,6 @@ import {
   resumenIncidencias,
   resumenLogs,
   resumenPedidos,
-  resumenProductos,
   seriePorDia,
   tiempoMedioResolucion,
 } from "./metricas.js";
@@ -245,7 +244,6 @@ function renderizar(datos) {
   const incidencias = resumenIncidencias(datos.incidencias);
   const logs = resumenLogs(datos.logs);
   const decisiones = resumenDecisiones(datos.decisiones);
-  const productos = resumenProductos(datos.productos);
   const resolucion = tiempoMedioResolucion(datos.resolucion);
 
   // Indicadores
@@ -319,18 +317,7 @@ function renderizar(datos) {
     })),
   );
 
-  // Listas y tabla
-  pintarLista(
-    $("productos"),
-    productos.map((p) => ({ clave: p.producto, valor: p.unidades })),
-  );
-  pintarLista($("prioridades"), aPares(incidencias.porPrioridad));
-  pintarLista($("eventos"), aPares(logs.porEvento).slice(0, 6));
-  pintarLista(
-    $("errores"),
-    aPares(logs.erroresPorTipo),
-    { vacio: "Sin errores registrados." },
-  );
+  // Tabla de ?ltimos eventos
   pintarUltimosLogs(datos.logs || []);
 
   pintarAvisoParcial(datos.errores || []);
