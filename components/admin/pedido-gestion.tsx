@@ -79,9 +79,8 @@ export default function PedidoGestion({
 
       if (resultado.error) {
         toast.error(resultado.error);
-      } else if (resultado.success) {
-        toast.success(resultado.success);
       } else {
+        if (resultado.success) toast.success(resultado.success);
         trasGuardar?.();
       }
 
@@ -167,6 +166,9 @@ export default function PedidoGestion({
               ))}
             </Select>
           </Campo>
+          <p className="mt-2 text-xs text-ink-500">
+            El cambio se sincroniza con el back-office a través de n8n.
+          </p>
         </div>
       </div>
 

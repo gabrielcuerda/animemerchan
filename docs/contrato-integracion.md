@@ -42,17 +42,17 @@ registro de la ejecución de n8n** ni `duracion_ms`.
 
 ## 2. Transporte
 
-| Aspecto | Decisión |
-| --- | --- |
-| Protocolo | HTTPS en producción, HTTP en local |
-| Formato | JSON UTF-8 |
-| Cabecera | `Content-Type: application/json` |
-| Método | `POST` al webhook de n8n; n8n usa `POST`/`PATCH` contra el back-office |
-| Autenticación | **No implementada** en el prototipo. El back-office no valida token. Riesgo aceptado y documentado en la memoria. |
-| Timeout tienda → n8n | 5 s (`AbortSignal.timeout(5000)` en `lib/integracion/enviar-integracion.ts`) |
-| Timeout n8n → back-office | 10 s por intento |
-| Reintentos n8n → back-office | 3 intentos, 2 s entre intentos |
-| Reintentos tienda → n8n | Ninguno. Si falla, la tienda ya ha cobrado y el error queda en consola; el pedido se puede reenviar a mano. |
+| Aspecto                      | Decisión                                                                                                          |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Protocolo                    | HTTPS en producción, HTTP en local                                                                                |
+| Formato                      | JSON UTF-8                                                                                                        |
+| Cabecera                     | `Content-Type: application/json`                                                                                  |
+| Método                       | `POST` al webhook de n8n; n8n usa `POST`/`PATCH` contra el back-office                                            |
+| Autenticación                | **No implementada** en el prototipo. El back-office no valida token. Riesgo aceptado y documentado en la memoria. |
+| Timeout tienda → n8n         | 5 s (`AbortSignal.timeout(5000)` en `lib/integracion/enviar-integracion.ts`)                                      |
+| Timeout n8n → back-office    | 10 s por intento                                                                                                  |
+| Reintentos n8n → back-office | 3 intentos, 2 s entre intentos                                                                                    |
+| Reintentos tienda → n8n      | Ninguno. Si falla, la tienda ya ha cobrado y el error queda en consola; el pedido se puede reenviar a mano.       |
 
 > **Render Free:** tanto n8n como el back-office se duermen tras 15 minutos sin
 > tráfico. Un arranque en frío puede superar el timeout de 5 s de la tienda.
@@ -64,9 +64,9 @@ registro de la ejecución de n8n** ni `duracion_ms`.
 Todos los eventos comparten un campo `evento` que identifica el tipo de caso.
 El workflow rechaza cualquier valor que no esté en la lista.
 
-| Campo | Tipo | Obligatorio | Descripción |
-| --- | --- | --- | --- |
-| `evento` | string | Sí | `order.created`, `order.status_changed` o `incident.created` |
+| Campo    | Tipo   | Obligatorio | Descripción                                                  |
+| -------- | ------ | ----------- | ------------------------------------------------------------ |
+| `evento` | string | Sí          | `order.created`, `order.status_changed` o `incident.created` |
 
 ## 4. Evento `order.created`
 
@@ -75,19 +75,19 @@ página de confirmación). Es el **Escenario 1**.
 
 ### 4.1 Campos
 
-| Campo | Tipo | Obligatorio | Regla |
-| --- | --- | --- | --- |
-| `pedido_id` | string | Sí | Clave de idempotencia. Si se repite, no se duplica. |
-| `cliente_email` | string | No | Si viene, debe tener formato de email. Puede ser `null`. |
-| `cliente_nombre` | string | No | Texto libre. |
-| `total` | number | Sí | Mayor que 0. |
-| `moneda` | string | No | ISO 4217 de 3 letras. Por defecto `EUR`. |
-| `estado` | string | No | `creado`, `pago_simulado`, `preparacion`, `enviado`, `cancelado`. Por defecto `creado`. |
-| `fecha` | string | No | ISO 8601. Por defecto, la fecha de recepción en n8n. |
-| `lineas` | array | Sí | Al menos una línea. |
-| `lineas[].producto` | string | Sí | Nombre del producto. |
-| `lineas[].cantidad` | integer | Sí | Entero mayor que 0. |
-| `lineas[].precio` | number | Sí | Mayor o igual que 0. Precio unitario sin IVA. |
+| Campo               | Tipo    | Obligatorio | Regla                                                                                   |
+| ------------------- | ------- | ----------- | --------------------------------------------------------------------------------------- |
+| `pedido_id`         | string  | Sí          | Clave de idempotencia. Si se repite, no se duplica.                                     |
+| `cliente_email`     | string  | No          | Si viene, debe tener formato de email. Puede ser `null`.                                |
+| `cliente_nombre`    | string  | No          | Texto libre.                                                                            |
+| `total`             | number  | Sí          | Mayor que 0.                                                                            |
+| `moneda`            | string  | No          | ISO 4217 de 3 letras. Por defecto `EUR`.                                                |
+| `estado`            | string  | No          | `creado`, `pago_simulado`, `preparacion`, `enviado`, `cancelado`. Por defecto `creado`. |
+| `fecha`             | string  | No          | ISO 8601. Por defecto, la fecha de recepción en n8n.                                    |
+| `lineas`            | array   | Sí          | Al menos una línea.                                                                     |
+| `lineas[].producto` | string  | Sí          | Nombre del producto.                                                                    |
+| `lineas[].cantidad` | integer | Sí          | Entero mayor que 0.                                                                     |
+| `lineas[].precio`   | number  | Sí          | Mayor o igual que 0. Precio unitario sin IVA.                                           |
 
 ### 4.2 Ejemplo
 
@@ -101,9 +101,7 @@ página de confirmación). Es el **Escenario 1**.
   "moneda": "EUR",
   "estado": "creado",
   "fecha": "2026-10-29T10:00:00Z",
-  "lineas": [
-    { "producto": "Camiseta Eren", "cantidad": 2, "precio": 129.0 }
-  ]
+  "lineas": [{ "producto": "Camiseta Eren", "cantidad": 2, "precio": 129.0 }]
 }
 ```
 
@@ -111,11 +109,11 @@ página de confirmación). Es el **Escenario 1**.
 
 `POST /pedidos` con el payload normalizado. El back-office responde:
 
-| Caso | HTTP | Cuerpo |
-| --- | --- | --- |
-| Pedido nuevo | `201` | `{ "ok": true, "pedido_id": "ORD-001" }` |
-| Pedido repetido | `200` | `{ "aviso": "El pedido ya existía" }` |
-| Validación del back-office | `422` | `{ "error": "..." }` |
+| Caso                       | HTTP  | Cuerpo                                   |
+| -------------------------- | ----- | ---------------------------------------- |
+| Pedido nuevo               | `201` | `{ "ok": true, "pedido_id": "ORD-001" }` |
+| Pedido repetido            | `200` | `{ "aviso": "El pedido ya existía" }`    |
+| Validación del back-office | `422` | `{ "error": "..." }`                     |
 
 ## 5. Evento `order.status_changed`
 
@@ -124,11 +122,11 @@ Lo emite la tienda cuando un administrador cambia el estado de un pedido en
 
 ### 5.1 Campos
 
-| Campo | Tipo | Obligatorio | Regla |
-| --- | --- | --- | --- |
-| `pedido_id` | string | Sí | Pedido que ya existe en el back-office. |
-| `estado_anterior` | string | No | Mismo enum que `estado`. Solo informativo. |
-| `estado` | string | Sí | `creado`, `pago_simulado`, `preparacion`, `enviado`, `cancelado`. |
+| Campo             | Tipo   | Obligatorio | Regla                                                             |
+| ----------------- | ------ | ----------- | ----------------------------------------------------------------- |
+| `pedido_id`       | string | Sí          | Pedido que ya existe en el back-office.                           |
+| `estado_anterior` | string | No          | Mismo enum que `estado`. Solo informativo.                        |
+| `estado`          | string | Sí          | `creado`, `pago_simulado`, `preparacion`, `enviado`, `cancelado`. |
 
 ### 5.2 Ejemplo
 
@@ -146,14 +144,14 @@ Lo emite la tienda cuando un administrador cambia el estado de un pedido en
 `PATCH /pedidos/ORD-001/estado` con `{ "estado": "enviado" }`. El back-office
 responde:
 
-| Caso | HTTP | Cuerpo |
-| --- | --- | --- |
-| Estado aplicado | `200` | `{ "ok": true, "pedido_id": "ORD-001", "estado": "enviado" }` |
-| Pedido inexistente | `404` | `{ "error": "Pedido no encontrado" }` |
-| Estado inválido | `422` | `{ "error": "Estado inválido. Valores: ..." }` |
+| Caso               | HTTP  | Cuerpo                                                        |
+| ------------------ | ----- | ------------------------------------------------------------- |
+| Estado aplicado    | `200` | `{ "ok": true, "pedido_id": "ORD-001", "estado": "enviado" }` |
+| Pedido inexistente | `404` | `{ "error": "Pedido no encontrado" }`                         |
+| Estado inválido    | `422` | `{ "error": "Estado inválido. Valores: ..." }`                |
 
 > El back-office también acepta `order.status_changed` por `POST /pedidos` como
-> *fallback* para el modo directo sin n8n. El workflow **no usa ese atajo**:
+> _fallback_ para el modo directo sin n8n. El workflow **no usa ese atajo**:
 > llama a `PATCH`, que es la ruta explícita del contrato.
 
 ## 6. Evento `incident.created`
@@ -163,17 +161,17 @@ Lo envía el flujo de Telegram de la Persona 3 al mismo webhook. Es el
 
 ### 6.1 Campos
 
-| Campo | Tipo | Obligatorio | Regla |
-| --- | --- | --- | --- |
-| `incidencia_id` | string | Sí | Clave de idempotencia. |
-| `pedido_id` | string | No | Pedido asociado. Puede no existir todavía. |
-| `cliente_email` | string | No | Si viene, email válido. |
-| `telegram_chat_id` | string | No | Chat de origen. |
-| `tipo` | string | Sí | Texto libre (por ejemplo `retraso_envio`). |
-| `descripcion` | string | Sí | Texto libre. |
-| `estado` | string | No | `abierta`, `en_revision`, `resuelta`, `cerrada`. Por defecto `abierta`. |
-| `prioridad` | string | No | `alta`, `media`, `baja`. Puede ser `null`. |
-| `fecha` | string | Sí | ISO 8601. |
+| Campo              | Tipo   | Obligatorio | Regla                                                                   |
+| ------------------ | ------ | ----------- | ----------------------------------------------------------------------- |
+| `incidencia_id`    | string | Sí          | Clave de idempotencia.                                                  |
+| `pedido_id`        | string | No          | Pedido asociado. Puede no existir todavía.                              |
+| `cliente_email`    | string | No          | Si viene, email válido.                                                 |
+| `telegram_chat_id` | string | No          | Chat de origen.                                                         |
+| `tipo`             | string | Sí          | Texto libre (por ejemplo `retraso_envio`).                              |
+| `descripcion`      | string | Sí          | Texto libre.                                                            |
+| `estado`           | string | No          | `abierta`, `en_revision`, `resuelta`, `cerrada`. Por defecto `abierta`. |
+| `prioridad`        | string | No          | `alta`, `media`, `baja`. Puede ser `null`.                              |
+| `fecha`            | string | Sí          | ISO 8601.                                                               |
 
 ### 6.2 Ejemplo
 
@@ -204,28 +202,28 @@ crearse aunque el pedido no exista; en ese caso el back-office añade el aviso
 La tienda solo mira `respuesta.ok`; no interpreta el cuerpo. Aun así, el
 contrato fija el cuerpo para que las evidencias y las pruebas sean claras.
 
-| Situación | HTTP | Cuerpo |
-| --- | --- | --- |
-| Pedido creado | `201` | `{ "ok": true, "pedido_id": "...", "execution_id": "..." }` |
-| Pedido duplicado | `200` | `{ "ok": true, "duplicado": true, "pedido_id": "...", "execution_id": "..." }` |
-| Estado aplicado | `200` | `{ "ok": true, "pedido_id": "...", "estado": "...", "execution_id": "..." }` |
-| Incidencia creada | `201` | `{ "ok": true, "incidencia_id": "...", "execution_id": "..." }` |
-| Incidencia duplicada | `200` | `{ "ok": true, "duplicado": true, "incidencia_id": "...", "execution_id": "..." }` |
-| Validación fallida | `422` | `{ "ok": false, "evento": "...", "errores": ["..."], "execution_id": "..." }` |
+| Situación                           | HTTP  | Cuerpo                                                                                         |
+| ----------------------------------- | ----- | ---------------------------------------------------------------------------------------------- |
+| Pedido creado                       | `201` | `{ "ok": true, "pedido_id": "...", "execution_id": "..." }`                                    |
+| Pedido duplicado                    | `200` | `{ "ok": true, "duplicado": true, "pedido_id": "...", "execution_id": "..." }`                 |
+| Estado aplicado                     | `200` | `{ "ok": true, "pedido_id": "...", "estado": "...", "execution_id": "..." }`                   |
+| Incidencia creada                   | `201` | `{ "ok": true, "incidencia_id": "...", "execution_id": "..." }`                                |
+| Incidencia duplicada                | `200` | `{ "ok": true, "duplicado": true, "incidencia_id": "...", "execution_id": "..." }`             |
+| Validación fallida                  | `422` | `{ "ok": false, "evento": "...", "errores": ["..."], "execution_id": "..." }`                  |
 | Back-office no encuentra la entidad | `404` | `{ "ok": false, "codigo_error": "BACKOFFICE_404", "pedido_id": "...", "execution_id": "..." }` |
-| Back-office responde 422 | `422` | `{ "ok": false, "codigo_error": "BACKOFFICE_422", "execution_id": "..." }` |
-| Back-office caído o error interno | `502` | `{ "ok": false, "codigo_error": "BACKOFFICE_5XX", "execution_id": "..." }` |
-| Timeout del back-office | `504` | `{ "ok": false, "codigo_error": "BACKOFFICE_TIMEOUT", "execution_id": "..." }` |
+| Back-office responde 422            | `422` | `{ "ok": false, "codigo_error": "BACKOFFICE_422", "execution_id": "..." }`                     |
+| Back-office caído o error interno   | `502` | `{ "ok": false, "codigo_error": "BACKOFFICE_5XX", "execution_id": "..." }`                     |
+| Timeout del back-office             | `504` | `{ "ok": false, "codigo_error": "BACKOFFICE_TIMEOUT", "execution_id": "..." }`                 |
 
 ## 8. Códigos de error
 
-| Código | HTTP | Significado | Dónde se genera |
-| --- | --- | --- | --- |
-| `VALIDACION` | `422` | Falta un campo, un tipo no cuadra, email inválido, importe ≤ 0, línea vacía o estado fuera del enum. | Nodo `Validar payload` |
-| `BACKOFFICE_404` | `404` | El pedido o la incidencia no existe en el back-office. | Nodo `Error *` |
-| `BACKOFFICE_422` | `422` | El back-office rechaza un payload que n8n dejó pasar (defensa en profundidad). | Nodo `Error *` |
-| `BACKOFFICE_5XX` | `502` | Error 5xx, red caída o respuesta inesperada. | Nodo `Error *` |
-| `BACKOFFICE_TIMEOUT` | `504` | Sin respuesta en 10 s tras los reintentos. | Nodo `Error *` |
+| Código               | HTTP  | Significado                                                                                          | Dónde se genera        |
+| -------------------- | ----- | ---------------------------------------------------------------------------------------------------- | ---------------------- |
+| `VALIDACION`         | `422` | Falta un campo, un tipo no cuadra, email inválido, importe ≤ 0, línea vacía o estado fuera del enum. | Nodo `Validar payload` |
+| `BACKOFFICE_404`     | `404` | El pedido o la incidencia no existe en el back-office.                                               | Nodo `Error *`         |
+| `BACKOFFICE_422`     | `422` | El back-office rechaza un payload que n8n dejó pasar (defensa en profundidad).                       | Nodo `Error *`         |
+| `BACKOFFICE_5XX`     | `502` | Error 5xx, red caída o respuesta inesperada.                                                         | Nodo `Error *`         |
+| `BACKOFFICE_TIMEOUT` | `504` | Sin respuesta en 10 s tras los reintentos.                                                           | Nodo `Error *`         |
 
 ## 9. Idempotencia
 
@@ -265,16 +263,16 @@ mismo workflow no duplica la métrica.
 }
 ```
 
-| Campo | Tipo | Obligatorio | Nota |
-| --- | --- | --- | --- |
-| `execution_id` | string | No | Clave de idempotencia del log. |
-| `evento` | string | Sí | Evento del contrato. |
-| `pedido_id` | string | No | Pedido asociado; en incidencias, el pedido de la incidencia si existe. |
-| `resultado` | string | Sí | `correcto` o `error`. |
-| `codigo_error` | string | No | Uno de los códigos de la sección 8. |
-| `detalle` | string | No | Texto legible para la evidencia. |
-| `duracion_ms` | number | No | Tiempo total del workflow en ms. |
-| `origen` | string | No | `n8n` para las ejecuciones de este workflow. |
+| Campo          | Tipo   | Obligatorio | Nota                                                                   |
+| -------------- | ------ | ----------- | ---------------------------------------------------------------------- |
+| `execution_id` | string | No          | Clave de idempotencia del log.                                         |
+| `evento`       | string | Sí          | Evento del contrato.                                                   |
+| `pedido_id`    | string | No          | Pedido asociado; en incidencias, el pedido de la incidencia si existe. |
+| `resultado`    | string | Sí          | `correcto` o `error`.                                                  |
+| `codigo_error` | string | No          | Uno de los códigos de la sección 8.                                    |
+| `detalle`      | string | No          | Texto legible para la evidencia.                                       |
+| `duracion_ms`  | number | No          | Tiempo total del workflow en ms.                                       |
+| `origen`       | string | No          | `n8n` para las ejecuciones de este workflow.                           |
 
 > El back-office también escribe sus propios logs internos (`origen: null`).
 > Para métricas de integración hay que filtrar por `origen = "n8n"` o por la
@@ -296,29 +294,29 @@ falta crear otro.
 
 ## 11. Validaciones: dónde y por qué
 
-| Validación | n8n | Back-office | Motivo |
-| --- | --- | --- | --- |
-| Campos obligatorios | Sí | Sí | n8n falla rápido y devuelve un 422 uniforme; el back-office se protege de llamadas directas. |
-| Tipos (`total`, `cantidad`, `precio`) | Sí | Sí | Evita que un string llegue a PostgreSQL. |
-| Email | Sí | No | La tienda ya lo valida; n8n lo comprueba por si el emisor cambia. |
-| Estados y prioridades | Sí | Sí | Listas cerradas en los dos lados. |
-| Líneas no vacías | Sí | Sí | Un pedido sin líneas no es factible. |
-| Idempotencia | Detecta el `aviso` | `ON CONFLICT` | La base de datos decide; n8n lo hace visible. |
+| Validación                            | n8n                | Back-office   | Motivo                                                                                       |
+| ------------------------------------- | ------------------ | ------------- | -------------------------------------------------------------------------------------------- |
+| Campos obligatorios                   | Sí                 | Sí            | n8n falla rápido y devuelve un 422 uniforme; el back-office se protege de llamadas directas. |
+| Tipos (`total`, `cantidad`, `precio`) | Sí                 | Sí            | Evita que un string llegue a PostgreSQL.                                                     |
+| Email                                 | Sí                 | No            | La tienda ya lo valida; n8n lo comprueba por si el emisor cambia.                            |
+| Estados y prioridades                 | Sí                 | Sí            | Listas cerradas en los dos lados.                                                            |
+| Líneas no vacías                      | Sí                 | Sí            | Un pedido sin líneas no es factible.                                                         |
+| Idempotencia                          | Detecta el `aviso` | `ON CONFLICT` | La base de datos decide; n8n lo hace visible.                                                |
 
 ## 12. Ficheros de prueba
 
 Los fixtures están en `n8n/payloads/`:
 
-| Fichero | Escenario | Respuesta esperada |
-| --- | --- | --- |
-| `01-pedido-valido.json` | Escenario 1 | `201` |
-| `02-pedido-duplicado.json` | Idempotencia | `200` + `duplicado: true` |
-| `03-pedido-invalido.json` | Error de validación | `422` + `VALIDACION` |
-| `04-estado-valido.json` | Escenario 2 | `200` |
-| `05-estado-invalido.json` | Error de estado | `422` + `VALIDACION` |
-| `06-incidencia-valida.json` | Escenario 3 | `201` |
-| `07-incidencia-invalida.json` | Error de incidencia | `422` + `VALIDACION` |
-| `08-evento-desconocido.json` | Evento no soportado | `422` + `VALIDACION` |
+| Fichero                       | Escenario           | Respuesta esperada        |
+| ----------------------------- | ------------------- | ------------------------- |
+| `01-pedido-valido.json`       | Escenario 1         | `201`                     |
+| `02-pedido-duplicado.json`    | Idempotencia        | `200` + `duplicado: true` |
+| `03-pedido-invalido.json`     | Error de validación | `422` + `VALIDACION`      |
+| `04-estado-valido.json`       | Escenario 2         | `200`                     |
+| `05-estado-invalido.json`     | Error de estado     | `422` + `VALIDACION`      |
+| `06-incidencia-valida.json`   | Escenario 3         | `201`                     |
+| `07-incidencia-invalida.json` | Error de incidencia | `422` + `VALIDACION`      |
+| `08-evento-desconocido.json`  | Evento no soportado | `422` + `VALIDACION`      |
 
 Los payloads canónicos de la entrega siguen estando en `backoffice/payloads/`.
 Estos son los que usa el workflow de n8n en las pruebas de la Persona 2.

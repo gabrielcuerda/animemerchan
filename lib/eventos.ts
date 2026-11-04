@@ -17,8 +17,9 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 /**
  * Rampa de eventos.
  *
- * `support.requested` e `incident.created` NO están: no existe módulo de
- * postventa al que colgarlos, yEmitirlos sin destino no aporta nada.
+ * `support.requested` e `incident.created` no están aquí: la postventa no se
+ * registra en la tabla `eventos` de la tienda. Las incidencias viajan al
+ * back-office por `INTEGRACION_WEBHOOK_URL` con el evento `incident.created`.
  */
 export const TIPOS_EVENTO = [
   "product.viewed",

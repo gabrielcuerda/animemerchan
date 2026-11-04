@@ -14,7 +14,10 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 const workflow = JSON.parse(
-  readFileSync(new URL("../workflow-integracion.json", import.meta.url), "utf8"),
+  readFileSync(
+    new URL("../workflow-integracion.json", import.meta.url),
+    "utf8",
+  ),
 );
 
 function nodo(nombre) {
@@ -183,7 +186,11 @@ test("rechaza un evento desconocido", () => {
 
 test("un pedido nuevo responde 201 y se registra como correcto", () => {
   const base = validar(PEDIDO);
-  const salida = evaluar("Evaluar pedido", { ok: true, pedido_id: "ORD-001" }, base);
+  const salida = evaluar(
+    "Evaluar pedido",
+    { ok: true, pedido_id: "ORD-001" },
+    base,
+  );
   assert.equal(salida.http_status, 201);
   assert.equal(salida.respuesta.ok, true);
   assert.equal(salida.respuesta.duplicado, false);
@@ -194,7 +201,11 @@ test("un pedido nuevo responde 201 y se registra como correcto", () => {
 
 test("un pedido duplicado responde 200 y se marca como duplicado", () => {
   const base = validar(PEDIDO);
-  const salida = evaluar("Evaluar pedido", { aviso: "El pedido ya existía" }, base);
+  const salida = evaluar(
+    "Evaluar pedido",
+    { aviso: "El pedido ya existía" },
+    base,
+  );
   assert.equal(salida.http_status, 200);
   assert.equal(salida.respuesta.duplicado, true);
   assert.match(salida.log.detalle, /duplicado/);
@@ -217,7 +228,11 @@ test("una incidencia nueva responde 201", () => {
 
 test("una incidencia duplicada responde 200", () => {
   const base = validar(INCIDENCIA);
-  const salida = evaluar("Evaluar incidencia", { aviso: "La incidencia ya existía" }, base);
+  const salida = evaluar(
+    "Evaluar incidencia",
+    { aviso: "La incidencia ya existía" },
+    base,
+  );
   assert.equal(salida.http_status, 200);
   assert.equal(salida.respuesta.duplicado, true);
 });
@@ -246,7 +261,9 @@ test("un 404 del back-office se traduce a BACKOFFICE_404", () => {
   const base = validar(ESTADO);
   const salida = evaluar(
     "Error estado",
-    { error: { status: 404, message: '404 - {"error":"Pedido no encontrado"}' } },
+    {
+      error: { status: 404, message: '404 - {"error":"Pedido no encontrado"}' },
+    },
     base,
   );
   assert.equal(salida.http_status, 404);
@@ -255,14 +272,22 @@ test("un 404 del back-office se traduce a BACKOFFICE_404", () => {
 
 test("un timeout se traduce a BACKOFFICE_TIMEOUT y 504", () => {
   const base = validar(PEDIDO);
-  const salida = evaluar("Error pedido", { error: { message: "Timeout exceeded" } }, base);
+  const salida = evaluar(
+    "Error pedido",
+    { error: { message: "Timeout exceeded" } },
+    base,
+  );
   assert.equal(salida.http_status, 504);
   assert.equal(salida.log.codigo_error, "BACKOFFICE_TIMEOUT");
 });
 
 test("un 500 del back-office se traduce a BACKOFFICE_5XX y 502", () => {
   const base = validar(PEDIDO);
-  const salida = evaluar("Error pedido", { error: { httpCode: 500, message: "Internal error" } }, base);
+  const salida = evaluar(
+    "Error pedido",
+    { error: { httpCode: 500, message: "Internal error" } },
+    base,
+  );
   assert.equal(salida.http_status, 502);
   assert.equal(salida.log.codigo_error, "BACKOFFICE_5XX");
 });
@@ -274,7 +299,10 @@ test("un 500 del back-office se traduce a BACKOFFICE_5XX y 502", () => {
 test("usa versiones de nodo compatibles con n8n 1.113.3", () => {
   assert.equal(nodo("Webhook tienda").typeVersion, 2.1);
   assert.equal(nodo("¿Payload válido?").typeVersion, 2.2);
-  assert.equal(nodo("¿Payload válido?").parameters.conditions.options.version, 2);
+  assert.equal(
+    nodo("¿Payload válido?").parameters.conditions.options.version,
+    2,
+  );
 });
 
 test("el workflow contiene los nodos y tipos exigidos", () => {
@@ -301,7 +329,10 @@ test("todas las conexiones apuntan a nodos existentes", () => {
   const nombres = new Set(workflow.nodes.map((n) => n.name));
 
   for (const [origen, salidas] of Object.entries(workflow.connections)) {
-    assert.ok(nombres.has(origen), "Conexión desde un nodo inexistente: " + origen);
+    assert.ok(
+      nombres.has(origen),
+      "Conexión desde un nodo inexistente: " + origen,
+    );
 
     for (const salida of salidas.main) {
       for (const conexion of salida) {
@@ -315,7 +346,9 @@ test("todas las conexiones apuntan a nodos existentes", () => {
 });
 
 test("las llamadas al back-office usan BACKOFFICE_URL y no una URL hardcodeada", () => {
-  const http = workflow.nodes.filter((n) => n.type === "n8n-nodes-base.httpRequest");
+  const http = workflow.nodes.filter(
+    (n) => n.type === "n8n-nodes-base.httpRequest",
+  );
   const backoffice = http.filter((n) =>
     n.parameters.url.includes("$env.BACKOFFICE_URL"),
   );
@@ -333,7 +366,9 @@ test("las llamadas al back-office usan BACKOFFICE_URL y no una URL hardcodeada",
 });
 
 test("las cuatro ramas de error avisan por Telegram", () => {
-  const alertas = workflow.nodes.filter((n) => n.name.startsWith("Avisar Telegram"));
+  const alertas = workflow.nodes.filter((n) =>
+    n.name.startsWith("Avisar Telegram"),
+  );
   assert.equal(alertas.length, 4);
 
   for (const n of alertas) {

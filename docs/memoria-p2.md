@@ -11,11 +11,11 @@ La tienda de la Tarea 1 no escribe en el back-office: emite eventos por HTTP.
 El workflow de n8n es el único punto de entrada en producción. El contrato fija
 tres eventos y una respuesta uniforme:
 
-| Evento | Origen | Destino en el back-office |
-| --- | --- | --- |
-| `order.created` | Webhook de Stripe y `/order-confirmation` | `POST /pedidos` |
-| `order.status_changed` | `/admin/pedidos` | `PATCH /pedidos/:id/estado` |
-| `incident.created` | Bot de Telegram (Persona 3) | `POST /incidencias` |
+| Evento                 | Origen                                    | Destino en el back-office   |
+| ---------------------- | ----------------------------------------- | --------------------------- |
+| `order.created`        | Webhook de Stripe y `/order-confirmation` | `POST /pedidos`             |
+| `order.status_changed` | `/admin/pedidos`                          | `PATCH /pedidos/:id/estado` |
+| `incident.created`     | Bot de Telegram (Persona 3)               | `POST /incidencias`         |
 
 Cada evento comparte el campo `evento` y se identifica por una clave de
 negocio: `pedido_id` o `incidencia_id`. Esa clave es la que hace posible la
@@ -50,18 +50,33 @@ estado inválido, incidencia sin descripción y evento desconocido. Tener el
 camino feliz y el negativo en el mismo formato permite repetir la demo sin
 inventar datos y comparar respuestas.
 
+### 2.1 Canales de entrada en la tienda
+
+- **`/account/incidencias`:** formulario de soporte postventa. El cliente elige
+  uno de sus pedidos, el tipo de incidencia y una descripción. El servidor
+  comprueba que el pedido pertenece al usuario y envía `incident.created` al
+  webhook de n8n. La tienda **no** guarda la incidencia: el back-office es el
+  sistema de registro.
+- **`/admin/pedidos/[id]`:** el administrador cambia el estado del pedido. La
+  acción actualiza Supabase y envía `order.status_changed` con el estado ya
+  traducido al vocabulario del back-office (`creado`, `pago_simulado`,
+  `enviado`, `cancelado`).
+
+Ambos canales usan `INTEGRACION_WEBHOOK_URL`, así que en producción pasan por
+n8n y no llaman al back-office directamente.
+
 ## 3. Validaciones
 
 Hay dos capas deliberadas:
 
-| Validación | n8n | Back-office | Por qué |
-| --- | --- | --- | --- |
-| Campos obligatorios | Sí | Sí | n8n devuelve un 422 uniforme; el back-office se protege de llamadas directas. |
-| Tipos numéricos | Sí | Sí | Evita que un string llegue a PostgreSQL. |
-| Email | Sí | No | La tienda ya lo valida; n8n lo comprueba por si cambia el emisor. |
-| Estados y prioridades | Sí | Sí | Listas cerradas en los dos lados. |
-| Líneas no vacías | Sí | Sí | Un pedido sin líneas no es factible. |
-| Idempotencia | Detecta `aviso` | `ON CONFLICT` | La base de datos decide; n8n lo hace visible. |
+| Validación            | n8n             | Back-office   | Por qué                                                                       |
+| --------------------- | --------------- | ------------- | ----------------------------------------------------------------------------- |
+| Campos obligatorios   | Sí              | Sí            | n8n devuelve un 422 uniforme; el back-office se protege de llamadas directas. |
+| Tipos numéricos       | Sí              | Sí            | Evita que un string llegue a PostgreSQL.                                      |
+| Email                 | Sí              | No            | La tienda ya lo valida; n8n lo comprueba por si cambia el emisor.             |
+| Estados y prioridades | Sí              | Sí            | Listas cerradas en los dos lados.                                             |
+| Líneas no vacías      | Sí              | Sí            | Un pedido sin líneas no es factible.                                          |
+| Idempotencia          | Detecta `aviso` | `ON CONFLICT` | La base de datos decide; n8n lo hace visible.                                 |
 
 La validación de n8n se ejecuta en un nodo Code y devuelve un objeto
 `{ valido, errores, evento, entidad_id, execution_id, payload }`. El resto del
@@ -73,13 +88,13 @@ defecto `creado`, fecha por defecto y líneas con tipos numéricos.
 El workflow tiene una rama de error por cada rama de negocio. No hay un
 `catch` genérico que devuelva siempre 500: cada causa tiene su código.
 
-| Código | HTTP | Cuándo |
-| --- | --- | --- |
-| `VALIDACION` | `422` | Falta un campo, un tipo no cuadra, email inválido, importe ≤ 0, línea vacía o estado fuera del enum. |
-| `BACKOFFICE_404` | `404` | El pedido o la incidencia no existe. |
-| `BACKOFFICE_422` | `422` | El back-office rechaza un payload que n8n dejó pasar. |
-| `BACKOFFICE_5XX` | `502` | Error 5xx, red caída o respuesta inesperada. |
-| `BACKOFFICE_TIMEOUT` | `504` | Sin respuesta en 10 s tras los reintentos. |
+| Código               | HTTP  | Cuándo                                                                                               |
+| -------------------- | ----- | ---------------------------------------------------------------------------------------------------- |
+| `VALIDACION`         | `422` | Falta un campo, un tipo no cuadra, email inválido, importe ≤ 0, línea vacía o estado fuera del enum. |
+| `BACKOFFICE_404`     | `404` | El pedido o la incidencia no existe.                                                                 |
+| `BACKOFFICE_422`     | `422` | El back-office rechaza un payload que n8n dejó pasar.                                                |
+| `BACKOFFICE_5XX`     | `502` | Error 5xx, red caída o respuesta inesperada.                                                         |
+| `BACKOFFICE_TIMEOUT` | `504` | Sin respuesta en 10 s tras los reintentos.                                                           |
 
 Además:
 

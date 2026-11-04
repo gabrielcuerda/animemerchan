@@ -48,6 +48,10 @@ export default async function AccountLayout({
     },
     { href: "/account/orders", label: translate(lang, "account.tab.orders") },
     {
+      href: "/account/incidencias",
+      label: translate(lang, "account.tab.incidents"),
+    },
+    {
       href: "/account/wishlist",
       label: translate(lang, "account.tab.wishlist"),
     },

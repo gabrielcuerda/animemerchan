@@ -10,10 +10,7 @@
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
-      "position": [
-        -900,
-        300
-      ],
+      "position": [-900, 300],
       "id": "e065db36-3241-4e60-a924-fed440b79719",
       "name": "Webhook tienda",
       "webhookId": "16c27b04-fcb1-4a7d-b84b-0b9cc949f4da"
@@ -24,10 +21,7 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        -660,
-        300
-      ],
+      "position": [-660, 300],
       "id": "3dea6503-34c8-43b3-976c-7b87308f358d",
       "name": "Validar payload"
     },
@@ -58,10 +52,7 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [
-        -420,
-        300
-      ],
+      "position": [-420, 300],
       "id": "befce48d-d91e-4bc0-9336-af6d1fcacc4b",
       "name": "¿Payload válido?"
     },
@@ -149,10 +140,7 @@
       },
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.3,
-      "position": [
-        -180,
-        120
-      ],
+      "position": [-180, 120],
       "id": "2ede8667-4f4a-40d6-af72-c25ba291204f",
       "name": "Enrutar por evento"
     },
@@ -169,10 +157,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        60,
-        -120
-      ],
+      "position": [60, -120],
       "id": "2bca1e31-1dba-4c10-9738-ede1c1e57c0f",
       "name": "HTTP crear pedido",
       "onError": "continueErrorOutput",
@@ -186,10 +171,7 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        300,
-        -120
-      ],
+      "position": [300, -120],
       "id": "d696c357-5749-43dd-9f2d-8c453a283563",
       "name": "Evaluar pedido"
     },
@@ -206,10 +188,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        540,
-        -120
-      ],
+      "position": [540, -120],
       "id": "be668edf-8ace-495e-b0cb-5443d70a8a3f",
       "name": "Log pedido",
       "onError": "continueRegularOutput",
@@ -235,10 +214,7 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [
-        780,
-        -120
-      ],
+      "position": [780, -120],
       "id": "c9028066-66e0-4e64-a21b-784650b2cf7e",
       "name": "Responder pedido"
     },
@@ -248,10 +224,7 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        300,
-        20
-      ],
+      "position": [300, 20],
       "id": "07a5b1fb-e3d9-4fc1-8a40-3ad8e45a9a60",
       "name": "Error pedido"
     },
@@ -268,10 +241,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        540,
-        20
-      ],
+      "position": [540, 20],
       "id": "89f6ab60-12e4-4c46-af18-f70594b53f38",
       "name": "Log error pedido",
       "onError": "continueRegularOutput",
@@ -292,10 +262,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        680,
-        20
-      ],
+      "position": [680, 20],
       "id": "77a58943-1052-4fae-a795-7a58efbd2e5b",
       "name": "Avisar Telegram pedido",
       "onError": "continueRegularOutput",
@@ -319,10 +286,7 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [
-        820,
-        20
-      ],
+      "position": [820, 20],
       "id": "dafd5742-8205-4101-be9a-abd35ed248d2",
       "name": "Responder error pedido"
     },
@@ -339,10 +303,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        60,
-        220
-      ],
+      "position": [60, 220],
       "id": "6407f2d3-f333-4b86-9645-e1aad4dd1f99",
       "name": "HTTP cambiar estado",
       "onError": "continueErrorOutput",
@@ -356,10 +317,7 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        300,
-        220
-      ],
+      "position": [300, 220],
       "id": "99601dbd-0fec-4e4f-9e28-1d303e6a5a0e",
       "name": "Evaluar estado"
     },
@@ -376,10 +334,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        540,
-        220
-      ],
+      "position": [540, 220],
       "id": "c68bb4d4-beff-4d6e-962d-dede66a6d5da",
       "name": "Log estado",
       "onError": "continueRegularOutput",
@@ -405,10 +360,7 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [
-        780,
-        220
-      ],
+      "position": [780, 220],
       "id": "adfedcea-477d-44f8-b512-6aefdba2d62e",
       "name": "Responder estado"
     },
@@ -418,10 +370,7 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        300,
-        360
-      ],
+      "position": [300, 360],
       "id": "063dc23b-d3a5-4751-89e3-bd8cef6cac88",
       "name": "Error estado"
     },
@@ -438,10 +387,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        540,
-        360
-      ],
+      "position": [540, 360],
       "id": "f82d2dd6-3b0b-465f-99ee-72208f8edf4f",
       "name": "Log error estado",
       "onError": "continueRegularOutput",
@@ -462,10 +408,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        680,
-        360
-      ],
+      "position": [680, 360],
       "id": "85e231a7-2ad0-4d06-b8af-3447c5f2e3d6",
       "name": "Avisar Telegram estado",
       "onError": "continueRegularOutput",
@@ -489,10 +432,7 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [
-        820,
-        360
-      ],
+      "position": [820, 360],
       "id": "be9c846f-9d03-4b60-8f6e-913ad8930fa5",
       "name": "Responder error estado"
     },
@@ -509,10 +449,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        60,
-        560
-      ],
+      "position": [60, 560],
       "id": "eb59c063-f55a-4463-b699-e9d63da995f0",
       "name": "HTTP crear incidencia",
       "onError": "continueErrorOutput",
@@ -526,10 +463,7 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        300,
-        560
-      ],
+      "position": [300, 560],
       "id": "0dc78d47-1742-4c29-b0e4-91d1da72f7b0",
       "name": "Evaluar incidencia"
     },
@@ -546,10 +480,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        540,
-        560
-      ],
+      "position": [540, 560],
       "id": "593e8b04-6af3-4fd3-a724-64cef0106c6b",
       "name": "Log incidencia",
       "onError": "continueRegularOutput",
@@ -575,10 +506,7 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [
-        780,
-        560
-      ],
+      "position": [780, 560],
       "id": "803dd3ed-0ff9-488c-9cc3-9fd3802d13ba",
       "name": "Responder incidencia"
     },
@@ -588,10 +516,7 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        300,
-        700
-      ],
+      "position": [300, 700],
       "id": "1f573524-744d-4b0c-a685-44b226c5e4fb",
       "name": "Error incidencia"
     },
@@ -608,10 +533,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        540,
-        700
-      ],
+      "position": [540, 700],
       "id": "66936bdf-859e-4c70-9f15-49a7e1b3e8cc",
       "name": "Log error incidencia",
       "onError": "continueRegularOutput",
@@ -632,10 +554,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        680,
-        700
-      ],
+      "position": [680, 700],
       "id": "bc3f2839-946c-41a5-81de-2f89bf4d3710",
       "name": "Avisar Telegram incidencia",
       "onError": "continueRegularOutput",
@@ -659,10 +578,7 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [
-        820,
-        700
-      ],
+      "position": [820, 700],
       "id": "cf448bc3-605f-4892-bdfb-41aa66b037aa",
       "name": "Responder error incidencia"
     },
@@ -672,10 +588,7 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        -180,
-        760
-      ],
+      "position": [-180, 760],
       "id": "a72b92c3-3cbe-4eca-a5d3-7903b30bb8c8",
       "name": "Preparar error validación"
     },
@@ -692,10 +605,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        60,
-        760
-      ],
+      "position": [60, 760],
       "id": "2263ee2c-6b89-4f80-be30-2ebf84eeabc2",
       "name": "Log validación",
       "onError": "continueRegularOutput",
@@ -716,10 +626,7 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        200,
-        760
-      ],
+      "position": [200, 760],
       "id": "a7a48364-4754-4af6-9a08-62205df15aa7",
       "name": "Avisar Telegram validación",
       "onError": "continueRegularOutput",
@@ -743,10 +650,7 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [
-        340,
-        760
-      ],
+      "position": [340, 760],
       "id": "fba08653-08f7-42ca-89ad-f05819f5f0c7",
       "name": "Responder 422"
     },
@@ -759,10 +663,7 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        -900,
-        -180
-      ],
+      "position": [-900, -180],
       "id": "fed5d9ff-c3b5-4247-a3b5-b4d2652e46eb",
       "name": "Nota contrato"
     },
@@ -775,10 +676,7 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        -180,
-        900
-      ],
+      "position": [-180, 900],
       "id": "17fd95d2-885e-4e85-9af8-10107db53f74",
       "name": "Nota errores"
     },
@@ -791,10 +689,7 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [
-        -420,
-        40
-      ],
+      "position": [-420, 40],
       "id": "830b04a5-cee1-4d75-96c1-d161513fed16",
       "name": "Nota eventos"
     }

@@ -128,14 +128,22 @@ export default async function OrdersPage() {
                 <span className="font-semibold">
                   Total: {formatCurrency(Number(pedido.total), pedido.moneda)}
                 </span>
-                {pedido.pago_id ? (
+                <div className="flex flex-wrap items-center gap-4">
+                  {pedido.pago_id ? (
+                    <Link
+                      href={`/factura/${encodeURIComponent(pedido.pago_id)}`}
+                      className="font-medium text-blue-600 underline underline-offset-4 hover:text-blue-700 dark:text-blue-400"
+                    >
+                      Ver factura
+                    </Link>
+                  ) : null}
                   <Link
-                    href={`/factura/${encodeURIComponent(pedido.pago_id)}`}
+                    href={`/account/incidencias?pedido=${pedido.id}`}
                     className="font-medium text-blue-600 underline underline-offset-4 hover:text-blue-700 dark:text-blue-400"
                   >
-                    Ver factura
+                    Abrir incidencia
                   </Link>
-                ) : null}
+                </div>
               </div>
             </article>
           ))}

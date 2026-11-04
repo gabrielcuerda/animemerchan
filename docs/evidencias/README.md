@@ -15,6 +15,9 @@ p2-06-incidencia-201.png         Escenario 3: incidencia creada (201)
 p2-07-logs-n8n.png               GET /logs con origen: n8n y duracion_ms
 p2-08-backoffice-antes.png       Back-office antes de la integración
 p2-09-backoffice-despues.png     Back-office después de la integración
+p2-10-formulario-incidencia.png  Formulario /account/incidencias con un pedido
+p2-11-admin-estado.png           Selector de estado en /admin/pedidos/[id]
+p2-12-incidencia-web.png         Incidencia creada desde la tienda en el back-office
 ```
 
 ## Qué debe verse en cada una
@@ -29,11 +32,17 @@ p2-09-backoffice-despues.png     Back-office después de la integración
    con el array `errores` y el nodo `HTTP crear pedido` **sin ejecutar**.
 5. **Estado 200:** respuesta con `estado: "enviado"` y `PATCH` en verde.
 6. **Incidencia 201:** respuesta con `incidencia_id: "INC-001"` y `POST
-   /incidencias` en verde.
+/incidencias` en verde.
 7. **Logs:** salida de `GET /logs` filtrada por `origen == "n8n"`, con
    `execution_id`, `resultado`, `codigo_error`, `detalle` y `duracion_ms`.
 8. **Antes/después:** `GET /pedidos` o la portada del back-office antes de
    enviar los payloads y después, con `ORD-001` y la incidencia `INC-001`.
+9. **Formulario de incidencia:** `/account/incidencias` con un pedido
+   seleccionado, el tipo y la descripción.
+10. **Admin:** `/admin/pedidos/[id]` con el selector de estado y el aviso de
+    sincronización con n8n.
+11. **Incidencia web:** `GET /incidencias?pedido_id=...` con la incidencia
+    creada desde la tienda y el log `origen: "n8n"`.
 
 ## Consejo para la defensa
 

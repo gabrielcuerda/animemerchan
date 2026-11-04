@@ -311,24 +311,24 @@ datos es **PostgreSQL** (Supabase), no SQLite. En Windows, para probar con
 
 ### Endpoints
 
-| Método  | Ruta                          | Qué hace                                                                            |
-| ------- | ----------------------------- | ----------------------------------------------------------------------------------- |
-| `POST`  | `/pedidos`                    | crea un pedido (evento `order.created`)                                             |
-| `GET`   | `/pedidos`                    | lista de pedidos (filtro `?cliente_email=`)                                         |
-| `GET`   | `/pedidos/:id`                | un pedido con sus líneas                                                            |
-| `PATCH` | `/pedidos/:id/estado`         | cambio de estado (`creado`, `pago_simulado`, `preparacion`, `enviado`, `cancelado`) |
-| `POST`  | `/incidencias`                | crea una incidencia (evento `incident.created`)                                     |
-| `GET`   | `/incidencias`                | lista (filtros `?pedido_id=`, `?cliente_email=`, `?estado=`)                        |
-| `PATCH` | `/incidencias/:id`            | actualiza estado/tipo/prioridad                                                     |
-| `POST`  | `/decisiones`                 | propuesta del agente de IA                                                          |
-| `GET`   | `/decisiones`                 | lista (filtros `?incidencia_id=`, `?estado=`)                                       |
-| `PATCH` | `/decisiones/:id`             | revisión humana: aprobar o rechazar                                                 |
-| `GET`   | `/logs`                       | historial de integraciones (filtros `?evento=`, `?resultado=`)                      |
-| `POST`  | `/logs`                       | registra una ejecución de n8n (idempotente por `execution_id`)                      |
-| `GET`   | `/productos-mas-solicitados`  | top de productos por unidades                                                       |
-| `GET`   | `/metricas/resolucion`        | tiempo medio de resolución de incidencias                                           |
-| `GET`   | `/healthz`                    | sondeo de vida para el keep-alive de Render                                         |
-| `GET`   | `/`                           | portada con la lista de endpoints                                                   |
+| Método  | Ruta                         | Qué hace                                                                            |
+| ------- | ---------------------------- | ----------------------------------------------------------------------------------- |
+| `POST`  | `/pedidos`                   | crea un pedido (evento `order.created`)                                             |
+| `GET`   | `/pedidos`                   | lista de pedidos (filtro `?cliente_email=`)                                         |
+| `GET`   | `/pedidos/:id`               | un pedido con sus líneas                                                            |
+| `PATCH` | `/pedidos/:id/estado`        | cambio de estado (`creado`, `pago_simulado`, `preparacion`, `enviado`, `cancelado`) |
+| `POST`  | `/incidencias`               | crea una incidencia (evento `incident.created`)                                     |
+| `GET`   | `/incidencias`               | lista (filtros `?pedido_id=`, `?cliente_email=`, `?estado=`)                        |
+| `PATCH` | `/incidencias/:id`           | actualiza estado/tipo/prioridad                                                     |
+| `POST`  | `/decisiones`                | propuesta del agente de IA                                                          |
+| `GET`   | `/decisiones`                | lista (filtros `?incidencia_id=`, `?estado=`)                                       |
+| `PATCH` | `/decisiones/:id`            | revisión humana: aprobar o rechazar                                                 |
+| `GET`   | `/logs`                      | historial de integraciones (filtros `?evento=`, `?resultado=`)                      |
+| `POST`  | `/logs`                      | registra una ejecución de n8n (idempotente por `execution_id`)                      |
+| `GET`   | `/productos-mas-solicitados` | top de productos por unidades                                                       |
+| `GET`   | `/metricas/resolucion`       | tiempo medio de resolución de incidencias                                           |
+| `GET`   | `/healthz`                   | sondeo de vida para el keep-alive de Render                                         |
+| `GET`   | `/`                          | portada con la lista de endpoints                                                   |
 
 ### Datos de prueba
 
@@ -362,11 +362,17 @@ Estados y prioridades se validan contra listas cerradas en los dos lados.
 
 ### Integración con la tienda
 
-La tienda envía dos eventos desde `lib/integracion/enviar-integracion.ts` a la
-URL declarada en `INTEGRACION_WEBHOOK_URL`:
+La tienda envía tres eventos desde `lib/integracion/enviar-integracion.ts` a
+la URL declarada en `INTEGRACION_WEBHOOK_URL`:
 
 - `order.created` — desde el webhook de Stripe y desde `/order-confirmation`.
 - `order.status_changed` — desde el cambio de estado de `/admin/pedidos`.
+- `incident.created` — desde el formulario `/account/incidencias`; n8n la crea
+  en el back-office.
+
+El formulario de incidencias exige sesión y comprueba en servidor que el pedido
+pertenece al usuario antes de enviar el evento. La tienda no guarda la
+incidencia: el back-office es el sistema de registro.
 
 En local se puede apuntar directamente al back-office
 (`http://localhost:4000/pedidos`) para probar sin n8n. En producción apunta al
@@ -384,13 +390,13 @@ El workflow exportado está en
 webhook, valida el payload, enruta por evento, llama al back-office y registra
 cada ejecución.
 
-| Rama | Destino | Respuesta |
-| --- | --- | --- |
-| `order.created` | `POST /pedidos` | `201` o `200` si es duplicado |
-| `order.status_changed` | `PATCH /pedidos/:id/estado` | `200` |
-| `incident.created` | `POST /incidencias` | `201` o `200` si es duplicado |
-| Validación | `POST /logs` | `422` + `VALIDACION` |
-| Cualquier error | Telegram (opcional) | Aviso al chat del equipo; si falla, no bloquea la respuesta |
+| Rama                   | Destino                     | Respuesta                                                   |
+| ---------------------- | --------------------------- | ----------------------------------------------------------- |
+| `order.created`        | `POST /pedidos`             | `201` o `200` si es duplicado                               |
+| `order.status_changed` | `PATCH /pedidos/:id/estado` | `200`                                                       |
+| `incident.created`     | `POST /incidencias`         | `201` o `200` si es duplicado                               |
+| Validación             | `POST /logs`                | `422` + `VALIDACION`                                        |
+| Cualquier error        | Telegram (opcional)         | Aviso al chat del equipo; si falla, no bloquea la respuesta |
 
 Los códigos de error (`VALIDACION`, `BACKOFFICE_404`, `BACKOFFICE_422`,
 `BACKOFFICE_5XX`, `BACKOFFICE_TIMEOUT`) y el contrato completo están en

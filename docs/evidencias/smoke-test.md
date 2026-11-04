@@ -27,35 +27,35 @@ la API pública, porque el editor no mostraba la opción de importar archivo.
 
 Resultados contra el back-office real:
 
-| Petición | HTTP | Resultado |
-| --- | --- | --- |
-| `01-pedido-valido.json` con `ORD-001` ya existente | `200` | `duplicado: true` |
-| Pedido nuevo `ORD-002` | `201` | `pedido creado` |
-| `03-pedido-invalido.json` | `422` | `VALIDACION` |
-| `04-estado-valido.json` | `200` | `estado: enviado` |
-| `05-estado-invalido.json` | `422` | `VALIDACION` |
+| Petición                                            | HTTP  | Resultado         |
+| --------------------------------------------------- | ----- | ----------------- |
+| `01-pedido-valido.json` con `ORD-001` ya existente  | `200` | `duplicado: true` |
+| Pedido nuevo `ORD-002`                              | `201` | `pedido creado`   |
+| `03-pedido-invalido.json`                           | `422` | `VALIDACION`      |
+| `04-estado-valido.json`                             | `200` | `estado: enviado` |
+| `05-estado-invalido.json`                           | `422` | `VALIDACION`      |
 | `06-incidencia-valida.json` con `INC-001` existente | `200` | `duplicado: true` |
-| `07-incidencia-invalida.json` | `422` | `VALIDACION` |
-| `08-evento-desconocido.json` | `422` | `VALIDACION` |
+| `07-incidencia-invalida.json`                       | `422` | `VALIDACION`      |
+| `08-evento-desconocido.json`                        | `422` | `VALIDACION`      |
 
 Los logs del back-office muestran `origen: "n8n"` y `duracion_ms` en todas las
 ejecuciones (por ejemplo, 210 ms para `ORD-002`).
 
 ## Resultados
 
-| Petición | HTTP | Cuerpo observado |
-| --- | --- | --- |
-| `01-pedido-valido.json` | `201` | `{"ok":true,"duplicado":false,"evento":"order.created","pedido_id":"ORD-001","execution_id":"1"}` |
-| `02-pedido-duplicado.json` | `200` | `{"ok":true,"duplicado":true,"evento":"order.created","pedido_id":"ORD-001","execution_id":"2"}` |
-| `03-pedido-invalido.json` | `422` | `{"ok":false,"evento":"order.created","errores":["total debe ser un número mayor que 0","lineas debe ser una lista con al menos una línea"],"execution_id":"3"}` |
-| `04-estado-valido.json` | `200` | `{"ok":true,"evento":"order.status_changed","pedido_id":"ORD-001","estado":"enviado","execution_id":"4"}` |
-| `05-estado-invalido.json` | `422` | `{"ok":false,"evento":"order.status_changed","errores":["estado inválido: \"perdido\""],"execution_id":"5"}` |
-| `06-incidencia-valida.json` | `201` | `{"ok":true,"duplicado":false,"evento":"incident.created","incidencia_id":"INC-001","execution_id":"6"}` |
-| `07-incidencia-invalida.json` | `422` | `{"ok":false,"evento":"incident.created","errores":["falta descripcion"],"execution_id":"7"}` |
-| `08-evento-desconocido.json` | `422` | `{"ok":false,"evento":"order.deleted","errores":["evento no soportado: \"order.deleted\""],"execution_id":"8"}` |
-| `order.status_changed` con `ORD-999` | `404` | `{"ok":false,"evento":"order.status_changed","codigo_error":"BACKOFFICE_404","pedido_id":"ORD-999"}` |
-| `order.created` con el back-office caído | `502` | `{"ok":false,"evento":"order.created","codigo_error":"BACKOFFICE_5XX","pedido_id":"ORD-001"}` |
-| Incidencia `INC-001` repetida | `200` | `{"ok":true,"duplicado":true,"evento":"incident.created","incidencia_id":"INC-001"}` |
+| Petición                                 | HTTP  | Cuerpo observado                                                                                                                                                 |
+| ---------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `01-pedido-valido.json`                  | `201` | `{"ok":true,"duplicado":false,"evento":"order.created","pedido_id":"ORD-001","execution_id":"1"}`                                                                |
+| `02-pedido-duplicado.json`               | `200` | `{"ok":true,"duplicado":true,"evento":"order.created","pedido_id":"ORD-001","execution_id":"2"}`                                                                 |
+| `03-pedido-invalido.json`                | `422` | `{"ok":false,"evento":"order.created","errores":["total debe ser un número mayor que 0","lineas debe ser una lista con al menos una línea"],"execution_id":"3"}` |
+| `04-estado-valido.json`                  | `200` | `{"ok":true,"evento":"order.status_changed","pedido_id":"ORD-001","estado":"enviado","execution_id":"4"}`                                                        |
+| `05-estado-invalido.json`                | `422` | `{"ok":false,"evento":"order.status_changed","errores":["estado inválido: \"perdido\""],"execution_id":"5"}`                                                     |
+| `06-incidencia-valida.json`              | `201` | `{"ok":true,"duplicado":false,"evento":"incident.created","incidencia_id":"INC-001","execution_id":"6"}`                                                         |
+| `07-incidencia-invalida.json`            | `422` | `{"ok":false,"evento":"incident.created","errores":["falta descripcion"],"execution_id":"7"}`                                                                    |
+| `08-evento-desconocido.json`             | `422` | `{"ok":false,"evento":"order.deleted","errores":["evento no soportado: \"order.deleted\""],"execution_id":"8"}`                                                  |
+| `order.status_changed` con `ORD-999`     | `404` | `{"ok":false,"evento":"order.status_changed","codigo_error":"BACKOFFICE_404","pedido_id":"ORD-999"}`                                                             |
+| `order.created` con el back-office caído | `502` | `{"ok":false,"evento":"order.created","codigo_error":"BACKOFFICE_5XX","pedido_id":"ORD-001"}`                                                                    |
+| Incidencia `INC-001` repetida            | `200` | `{"ok":true,"duplicado":true,"evento":"incident.created","incidencia_id":"INC-001"}`                                                                             |
 
 ## Logs observados
 
