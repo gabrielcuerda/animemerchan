@@ -1,0 +1,4 @@
+{
+  "evento": "order.created",
+  "pedido_id": "ORD-ROTO"
+}

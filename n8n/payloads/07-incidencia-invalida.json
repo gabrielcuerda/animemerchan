@@ -1,0 +1,7 @@
+{
+  "evento": "incident.created",
+  "incidencia_id": "INC-002",
+  "pedido_id": "ORD-001",
+  "tipo": "retraso_envio",
+  "fecha": "2026-10-30T10:00:00Z"
+}

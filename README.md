@@ -284,12 +284,14 @@ pnpm run build
 ## Tarea 2: back-office e integración
 
 La Tarea 2 extiende la tienda con un **back-office independiente**: una API en
-Node.js/Express con su propia base de datos SQLite (`backoffice/pedidos.db`),
-separada de Supabase y desplegada fuera del entorno local. La tienda y los
-flujos de automatización le envían los eventos de la tienda por API (JSON).
+Node.js/Express con su propia base de datos PostgreSQL en Supabase, separada de
+la base de datos de la tienda y desplegada fuera del entorno local. La tienda y
+los flujos de automatización le envían los eventos de la tienda por API (JSON).
 
 - **URL pública:** `https://backoffice-tarea2.onrender.com`
 - **Código:** carpeta `backoffice/`
+- **Workflow n8n:** carpeta `n8n/` ([guía](n8n/README.md))
+- **Contrato de integración:** [`docs/contrato-integracion.md`](docs/contrato-integracion.md)
 
 ### Ejecución local
 
@@ -297,34 +299,40 @@ Requisito: Node.js 18+ (comprueba con `node -v`).
 
 ```bash
 cd backoffice
-npm install        # sólo la primera vez
-node server.js     # escucha en http://localhost:4000
+cp .env.example .env   # DATABASE_URL del proyecto PostgreSQL del back-office
+npm install            # sólo la primera vez
+node server.js         # escucha en http://localhost:4000
 ```
 
-La base de datos se crea sola al arrancar; cada PC tiene la suya local. En
-Windows, para probar con `curl` hay que usar `curl.exe` y meter el JSON en un
-fichero (`-d "@payloads/pedido-1.json"`), porque PowerShell rompe las comillas
-en línea.
+Las tablas se crean solas al arrancar (el esquema es idempotente). La base de
+datos es **PostgreSQL** (Supabase), no SQLite. En Windows, para probar con
+`curl` hay que usar `curl.exe` y meter el JSON en un fichero
+(`-d "@payloads/pedido-1.json"`), porque PowerShell rompe las comillas en línea.
 
 ### Endpoints
 
-| Método  | Ruta                  | Qué hace                                                                            |
-| ------- | --------------------- | ----------------------------------------------------------------------------------- |
-| `POST`  | `/pedidos`            | crea un pedido (evento `order.created`)                                             |
-| `GET`   | `/pedidos`            | lista de pedidos (filtro `?cliente_email=`)                                         |
-| `GET`   | `/pedidos/:id`        | un pedido con sus líneas                                                            |
-| `PATCH` | `/pedidos/:id/estado` | cambio de estado (`creado`, `pago_simulado`, `preparacion`, `enviado`, `cancelado`) |
-| `POST`  | `/incidencias`        | crea una incidencia (evento `incident.created`)                                     |
-| `GET`   | `/incidencias`        | lista (filtros `?pedido_id=`, `?cliente_email=`, `?estado=`)                        |
-| `PATCH` | `/incidencias/:id`    | actualiza estado/tipo/prioridad                                                     |
-| `POST`  | `/decisiones`         | propuesta del agente de IA                                                          |
-| `GET`   | `/decisiones`         | lista (filtros `?incidencia_id=`, `?estado=`)                                       |
-| `PATCH` | `/decisiones/:id`     | revisión humana: aprobar o rechazar                                                 |
-| `GET`   | `/`                   | portada con la lista de endpoints                                                   |
+| Método  | Ruta                          | Qué hace                                                                            |
+| ------- | ----------------------------- | ----------------------------------------------------------------------------------- |
+| `POST`  | `/pedidos`                    | crea un pedido (evento `order.created`)                                             |
+| `GET`   | `/pedidos`                    | lista de pedidos (filtro `?cliente_email=`)                                         |
+| `GET`   | `/pedidos/:id`                | un pedido con sus líneas                                                            |
+| `PATCH` | `/pedidos/:id/estado`         | cambio de estado (`creado`, `pago_simulado`, `preparacion`, `enviado`, `cancelado`) |
+| `POST`  | `/incidencias`                | crea una incidencia (evento `incident.created`)                                     |
+| `GET`   | `/incidencias`                | lista (filtros `?pedido_id=`, `?cliente_email=`, `?estado=`)                        |
+| `PATCH` | `/incidencias/:id`            | actualiza estado/tipo/prioridad                                                     |
+| `POST`  | `/decisiones`                 | propuesta del agente de IA                                                          |
+| `GET`   | `/decisiones`                 | lista (filtros `?incidencia_id=`, `?estado=`)                                       |
+| `PATCH` | `/decisiones/:id`             | revisión humana: aprobar o rechazar                                                 |
+| `GET`   | `/logs`                       | historial de integraciones (filtros `?evento=`, `?resultado=`)                      |
+| `POST`  | `/logs`                       | registra una ejecución de n8n (idempotente por `execution_id`)                      |
+| `GET`   | `/productos-mas-solicitados`  | top de productos por unidades                                                       |
+| `GET`   | `/metricas/resolucion`        | tiempo medio de resolución de incidencias                                           |
+| `GET`   | `/healthz`                    | sondeo de vida para el keep-alive de Render                                         |
+| `GET`   | `/`                           | portada con la lista de endpoints                                                   |
 
 ### Datos de prueba
 
-Los payloads de ejemplo están en `backoffice/payloads/`:
+Los payloads canónicos están en `backoffice/payloads/`:
 
 - `pedido-1.json` — pedido válido de Ana García (`ana@test.com`, `ORD-001`)
 - `pedido-error.json` — payload inválido (faltan campos → responde 422)
@@ -333,26 +341,73 @@ Los payloads de ejemplo están en `backoffice/payloads/`:
 - `decision-1.json` — propuesta del agente `DEC-001` sobre `INC-001`
 - `incidencia-en-revision.json` / `decision-aprobada.json` — parches de estado
 
+Los fixtures del workflow de n8n están en `n8n/payloads/` y cubren los tres
+escenarios, el duplicado, la validación y el evento desconocido. Se usan en los
+tests y en los `curl` de la guía de n8n.
+
 ### Validaciones e idempotencia
 
-- `POST` con campos obligatorios ausentes → `422` con el detalle, registrado en
-  `GET /logs` como `resultado: "error"`.
-- Reenviar el mismo `pedido_id` / `incidencia_id` / `decision_id` **no duplica**
-  la entidad (idempotencia) y se registra como `duplicado ignorado`.
-- Estados y prioridades se validan contra listas cerradas.
+Hay **dos capas**:
+
+- **Back-office:** `POST` con campos obligatorios ausentes → `422` con el
+  detalle, registrado en `GET /logs` como `resultado: "error"`. Reenviar el
+  mismo `pedido_id` / `incidencia_id` / `decision_id` **no duplica** la entidad
+  y se registra como `duplicado ignorado`.
+- **n8n:** valida antes de llamar al back-office (campos, tipos, email, importe,
+  líneas, estados y prioridades), devuelve un `422` uniforme y registra cada
+  ejecución en `POST /logs` con `origen: "n8n"`. Si el back-office responde
+  `200` con `aviso`, marca la respuesta como `duplicado: true` y no crea nada.
+
+Estados y prioridades se validan contra listas cerradas en los dos lados.
 
 ### Integración con la tienda
 
-La tienda envía `order.created` desde el webhook de Stripe
-(`lib/integracion/enviar-integracion.ts`) a la URL declarada en
-`INTEGRACION_WEBHOOK_URL`. En local apunta al back-office en `localhost:4000`
-para pruebas; en el flujo final pasa por el workflow de **n8n**, que valida y
-transforma el payload antes de reenviarlo al back-office público
-(`https://backoffice-tarea2.onrender.com/pedidos`).
+La tienda envía dos eventos desde `lib/integracion/enviar-integracion.ts` a la
+URL declarada en `INTEGRACION_WEBHOOK_URL`:
+
+- `order.created` — desde el webhook de Stripe y desde `/order-confirmation`.
+- `order.status_changed` — desde el cambio de estado de `/admin/pedidos`.
+
+En local se puede apuntar directamente al back-office
+(`http://localhost:4000/pedidos`) para probar sin n8n. En producción apunta al
+webhook de n8n, que valida, transforma y enruta:
+
+```env
+INTEGRACION_WEBHOOK_URL=https://TU-N8N.onrender.com/webhook/integracion-tarea2
+```
+
+### Workflow de n8n
+
+El workflow exportado está en
+[`n8n/workflow-integracion.json`](n8n/workflow-integracion.json). Recibe
+`order.created`, `order.status_changed` e `incident.created` en el mismo
+webhook, valida el payload, enruta por evento, llama al back-office y registra
+cada ejecución.
+
+| Rama | Destino | Respuesta |
+| --- | --- | --- |
+| `order.created` | `POST /pedidos` | `201` o `200` si es duplicado |
+| `order.status_changed` | `PATCH /pedidos/:id/estado` | `200` |
+| `incident.created` | `POST /incidencias` | `201` o `200` si es duplicado |
+| Validación | `POST /logs` | `422` + `VALIDACION` |
+| Cualquier error | Telegram (opcional) | Aviso al chat del equipo; si falla, no bloquea la respuesta |
+
+Los códigos de error (`VALIDACION`, `BACKOFFICE_404`, `BACKOFFICE_422`,
+`BACKOFFICE_5XX`, `BACKOFFICE_TIMEOUT`) y el contrato completo están en
+[`docs/contrato-integracion.md`](docs/contrato-integracion.md).
+
+La guía de despliegue en Render Free con Supabase, las variables de entorno,
+los `curl` de prueba y la solución de problemas están en
+[`n8n/README.md`](n8n/README.md). Los tests del workflow se ejecutan con:
+
+```bash
+cd n8n
+npm test
+```
 
 ### Despliegue en Render
 
-Servicio **Web Service** en plan Free:
+El back-office es un **Web Service** en plan Free:
 
 | Campo          | Valor                                     |
 | -------------- | ----------------------------------------- |
@@ -362,12 +417,26 @@ Servicio **Web Service** en plan Free:
 | Start Command  | `node server.js`                          |
 | Puerto         | asignado por Render en `process.env.PORT` |
 
+La base de datos no vive en el disco de Render: `DATABASE_URL` apunta al
+proyecto PostgreSQL del back-office en Supabase. El esquema se crea solo al
+arrancar, así que un reinicio no borra los pedidos.
+
+**n8n** se despliega aparte, también en Render Free, con su propia base de datos
+en un proyecto Supabase exclusivo. La guía paso a paso está en
+[`n8n/README.md`](n8n/README.md).
+
 ### Limitaciones conocidas
 
-- **Base de datos efímera:** en Render el disco no persiste; cada despliegue o
-  reinicio crea un `pedidos.db` vacío. Para la demo se regeneran los datos con
-  los payloads de prueba.
+- **Render Free se duerme:** tanto n8n como el back-office se suspenden tras
+  15 minutos sin tráfico. Un arranque en frío puede superar el timeout de 5 s de
+  la tienda. Se mitiga con el keep-alive de
+  `.github/workflows/keepalive.yml` (ping cada 10 minutos).
 - **Sin autenticación:** la API no tiene usuarios ni tokens; cualquiera con la
   URL puede leer y escribir. Es un prototipo académico sin actividad comercial.
+  El webhook de n8n tampoco valida un token.
 - **Sin límite de tasa ni HTTPS propio:** se apoya en el TLS y el rate limiting
   de Render.
+- **Doble registro de logs:** el back-office registra la entidad y n8n registra
+  la ejecución. Para métricas de integración hay que filtrar por
+  `origen === "n8n"` o por `execution_id`; si no, los eventos se cuentan dos
+  veces.
