@@ -26,7 +26,11 @@ const RUTAS = [
   "/metricas/resolucion",
 ];
 
-function fetchJson(ruta) {
+function esperar(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function fetchJson(ruta, intento = 0) {
   return new Promise((resolve, reject) => {
     const url = new URL(BACKOFFICE_URL + ruta);
     const req = https.get(
@@ -41,7 +45,17 @@ function fetchJson(ruta) {
       (res) => {
         let data = "";
         res.on("data", (c) => (data += c));
-        res.on("end", () => {
+        res.on("end", async () => {
+          if (res.statusCode === 429 && intento < 3) {
+            // Render/Cloudflare limita peticiones concurrentes; esperamos y reintentamos.
+            await esperar(1000 * (intento + 1));
+            try {
+              resolve(await fetchJson(ruta, intento + 1));
+            } catch (e) {
+              reject(e);
+            }
+            return;
+          }
           if (res.statusCode >= 400) {
             reject(new Error(`HTTP ${res.statusCode}`));
           } else {
@@ -66,8 +80,6 @@ function comoLista(valor) {
 }
 
 async function handleApi(res) {
-  const resultados = await Promise.allSettled(RUTAS.map(fetchJson));
-
   const datos = {
     "/pedidos": [],
     "/incidencias": [],
@@ -78,23 +90,27 @@ async function handleApi(res) {
   };
   const errores = [];
 
-  resultados.forEach((resultado, indice) => {
-    const ruta = RUTAS[indice];
-    if (resultado.status === "fulfilled") {
+  // Peticiones secuenciales para no disparar el rate-limit de Render/Cloudflare
+  // al back-office (varias en paralelo devuelven 429).
+  for (const ruta of RUTAS) {
+    try {
+      const valor = await fetchJson(ruta);
       if (ruta === "/metricas/resolucion") {
-        datos[ruta] = resultado.value;
+        datos[ruta] = valor;
       } else {
-        datos[ruta] = comoLista(resultado.value);
+        datos[ruta] = comoLista(valor);
       }
-    } else {
-      const motivo = resultado.reason;
+    } catch (e) {
+      const motivo = e;
       errores.push({
         ruta,
         mensaje:
           motivo && motivo.message ? String(motivo.message) : String(motivo),
       });
     }
-  });
+    // Pequeña pausa entre peticiones para evitar el 429.
+    await esperar(200);
+  }
 
   const logs = datos["/logs"]
     .slice()
