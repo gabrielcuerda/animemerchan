@@ -18,6 +18,7 @@ p2-09-backoffice-despues.png     Back-office después de la integración
 p2-10-formulario-incidencia.png  Formulario /account/incidencias con un pedido
 p2-11-admin-estado.png           Selector de estado en /admin/pedidos/[id]
 p2-12-incidencia-web.png         Incidencia creada desde la tienda en el back-office
+p2-13-aviso-incidencia.png       Mensaje de Telegram con el aviso de incidencia
 ```
 
 ## Qué debe verse en cada una
@@ -43,6 +44,8 @@ p2-12-incidencia-web.png         Incidencia creada desde la tienda en el back-of
     sincronización con n8n.
 11. **Incidencia web:** `GET /incidencias?pedido_id=...` con la incidencia
     creada desde la tienda y el log `origen: "n8n"`.
+12. **Aviso de Telegram:** mensaje recibido en `7683478497` con el
+    `incidencia_id`, pedido, cliente, tipo y descripción.
 
 ## Consejo para la defensa
 

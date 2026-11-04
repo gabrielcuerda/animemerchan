@@ -35,6 +35,12 @@ la tienda recibe `502` o `504` con el código correspondiente. En las ramas de
 error se intenta además un **aviso opcional por Telegram**; si no hay token
 configurado, el aviso falla y la respuesta sigue su curso.
 
+Cuando se crea una incidencia (`incident.created`), el workflow envía un aviso
+al chat configurado en `ALERT_TELEGRAM_CHAT_ID` con la referencia, el pedido, el
+cliente, el tipo y la descripción. Es un aviso interno para el equipo, no un
+mensaje al cliente. Si el token o el chat no están configurados, el aviso falla
+pero la incidencia se crea igualmente.
+
 ## 2. Despliegue de n8n en Render Free
 
 ### 2.1 Base de datos en Supabase

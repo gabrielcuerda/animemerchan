@@ -714,7 +714,23 @@ nodo("Evaluar incidencia", "n8n-nodes-base.code", 2, [300, 560], {
   jsCode: evaluarIncidencia,
 });
 log("Log incidencia", [540, 560], "Evaluar incidencia");
-responder("Responder incidencia", [780, 560], "Evaluar incidencia");
+nodo(
+  "Avisar incidencia",
+  "n8n-nodes-base.httpRequest",
+  4.2,
+  [680, 560],
+  {
+    method: "POST",
+    url: "=https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/sendMessage",
+    sendBody: true,
+    specifyBody: "json",
+    jsonBody:
+      "={{ JSON.stringify({ chat_id: $env.ALERT_TELEGRAM_CHAT_ID, text: '🆕 Incidencia ' + $('Validar payload').item.json.payload.incidencia_id + ' | Pedido: ' + ($('Validar payload').item.json.payload.pedido_id || 'sin pedido') + ' | Cliente: ' + ($('Validar payload').item.json.payload.cliente_email || 'sin email') + ' | Tipo: ' + $('Validar payload').item.json.payload.tipo + ' | Prioridad: ' + ($('Validar payload').item.json.payload.prioridad || 'sin prioridad') + ' | ' + $('Validar payload').item.json.payload.descripcion + ($('Evaluar incidencia').item.json.respuesta.duplicado ? ' | (ya existía)' : '') }) }}",
+    options: { timeout: 5000 },
+  },
+  { onError: "continueRegularOutput", retryOnFail: false },
+);
+responder("Responder incidencia", [820, 560], "Evaluar incidencia");
 
 nodo("Error incidencia", "n8n-nodes-base.code", 2, [300, 700], {
   jsCode: errorBackoffice,
@@ -818,7 +834,8 @@ conectar("Avisar Telegram estado", "Responder error estado");
 conectar("HTTP crear incidencia", "Evaluar incidencia", 0);
 conectar("HTTP crear incidencia", "Error incidencia", 1);
 conectar("Evaluar incidencia", "Log incidencia");
-conectar("Log incidencia", "Responder incidencia");
+conectar("Log incidencia", "Avisar incidencia");
+conectar("Avisar incidencia", "Responder incidencia");
 conectar("Error incidencia", "Log error incidencia");
 conectar("Log error incidencia", "Avisar Telegram incidencia");
 conectar("Avisar Telegram incidencia", "Responder error incidencia");

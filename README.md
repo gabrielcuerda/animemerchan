@@ -396,6 +396,7 @@ cada ejecución.
 | `order.status_changed` | `PATCH /pedidos/:id/estado` | `200`                                                       |
 | `incident.created`     | `POST /incidencias`         | `201` o `200` si es duplicado                               |
 | Validación             | `POST /logs`                | `422` + `VALIDACION`                                        |
+| Incidencia creada      | Telegram (aviso)            | Aviso al chat del equipo con los datos de la incidencia     |
 | Cualquier error        | Telegram (opcional)         | Aviso al chat del equipo; si falla, no bloquea la respuesta |
 
 Los códigos de error (`VALIDACION`, `BACKOFFICE_404`, `BACKOFFICE_422`,
