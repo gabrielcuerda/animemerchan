@@ -3,6 +3,7 @@ require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const express = require("express");
 const { Pool } = require("pg");
+const { crearPanel } = require("./panel");
 
 const app = express();
 const PUERTO = process.env.PORT || 4000;
@@ -222,8 +223,8 @@ app.post(
     }
 
     // Validación de campos obligatorios
-    const faltan = ["pedido_id", "total", "lineas"].filter(
-      (campo) => vacio(p[campo]),
+    const faltan = ["pedido_id", "total", "lineas"].filter((campo) =>
+      vacio(p[campo]),
     );
 
     if (faltan.length > 0) {
@@ -409,8 +410,10 @@ app.patch(
 // ---------------------------------------------------------------
 // 7b. GET /productos-mas-solicitados — top por unidades
 // ---------------------------------------------------------------
-app.get("/productos-mas-solicitados", manejar(async (req, res) => {
-  const r = await pool.query(`
+app.get(
+  "/productos-mas-solicitados",
+  manejar(async (req, res) => {
+    const r = await pool.query(`
     SELECT producto,
            SUM(cantidad)::int AS unidades,
            COUNT(DISTINCT pedido_id)::int AS pedidos
@@ -419,21 +422,25 @@ app.get("/productos-mas-solicitados", manejar(async (req, res) => {
     ORDER BY unidades DESC, producto ASC
     LIMIT 10
   `);
-  res.json(r.rows);
-}));
+    res.json(r.rows);
+  }),
+);
 
 // ---------------------------------------------------------------
 // 7c. GET /metricas/resolucion — tiempo medio de resolución
 // ---------------------------------------------------------------
-app.get("/metricas/resolucion", manejar(async (req, res) => {
-  const r = await pool.query(`
+app.get(
+  "/metricas/resolucion",
+  manejar(async (req, res) => {
+    const r = await pool.query(`
     SELECT AVG(EXTRACT(EPOCH FROM (fecha_resolucion - recibido_en)) * 1000) AS media_ms,
            COUNT(*) FILTER (WHERE fecha_resolucion IS NOT NULL)::int AS cerradas
     FROM incidencias
   `);
-  const row = r.rows[0] || {};
-  res.json({ media_ms: row.media_ms ?? null, cerradas: row.cerradas ?? 0 });
-}));
+    const row = r.rows[0] || {};
+    res.json({ media_ms: row.media_ms ?? null, cerradas: row.cerradas ?? 0 });
+  }),
+);
 // ---------------------------------------------------------------
 // 8. GET /logs — historial de integraciones (aciertos y errores)
 //    Filtros opcionales: ?evento= y ?resultado=
@@ -528,12 +535,9 @@ app.post(
   manejar(async (req, res) => {
     const p = req.body || {};
 
-    const faltan = [
-      "incidencia_id",
-      "tipo",
-      "descripcion",
-      "fecha",
-    ].filter((campo) => vacio(p[campo]));
+    const faltan = ["incidencia_id", "tipo", "descripcion", "fecha"].filter(
+      (campo) => vacio(p[campo]),
+    );
 
     if (faltan.length > 0) {
       const detalle = `Faltan campos: ${faltan.join(", ")}`;
@@ -956,6 +960,7 @@ app.get(
 
     const filas = [
       ["GET", "/", "Esta portada"],
+      ["GET", "/panel", "Panel visual (bonito): resumen, logs y tablas"],
       ["GET", "/healthz", "Sondeo de vida (keep-alive de Render)"],
       ["POST", "/pedidos", "Crea un pedido (order.created)"],
       ["GET", "/pedidos", "Lista de pedidos (?cliente_email=)"],
@@ -970,7 +975,11 @@ app.get(
       ["GET", "/logs", "Trazabilidad (?evento= &resultado=)"],
       ["POST", "/logs", "Registra una ejecución de n8n (idempotente)"],
       ["GET", "/productos-mas-solicitados", "Top de productos por unidades"],
-      ["GET", "/metricas/resolucion", "Tiempo medio de resolución de incidencias"],
+      [
+        "GET",
+        "/metricas/resolucion",
+        "Tiempo medio de resolución de incidencias",
+      ],
     ]
       .map(
         ([m, ruta, que]) =>
@@ -1041,6 +1050,8 @@ app.get(
 // ---------------------------------------------------------------
 // 13. Middleware de errores — ningún error deja el proceso caído
 // ---------------------------------------------------------------
+// Panel visual (HTML) — no toca la API JSON
+app.use(crearPanel({ pool }));
 app.use((err, req, res, next) => {
   console.error("Error no controlado:", err);
   registrar("error_interno", null, "error", err.message || String(err));
@@ -1054,9 +1065,15 @@ app.use((err, req, res, next) => {
 // 14. Arranque: primero el esquema, luego escuchar
 // ---------------------------------------------------------------
 async function iniciar() {
-  await pool.query("ALTER TABLE incidencias ADD COLUMN IF NOT EXISTS fecha_resolucion TIMESTAMPTZ");
-  await pool.query("ALTER TABLE pedidos ALTER COLUMN cliente_email DROP NOT NULL");
-  await pool.query("ALTER TABLE incidencias ALTER COLUMN cliente_email DROP NOT NULL");
+  await pool.query(
+    "ALTER TABLE incidencias ADD COLUMN IF NOT EXISTS fecha_resolucion TIMESTAMPTZ",
+  );
+  await pool.query(
+    "ALTER TABLE pedidos ALTER COLUMN cliente_email DROP NOT NULL",
+  );
+  await pool.query(
+    "ALTER TABLE incidencias ALTER COLUMN cliente_email DROP NOT NULL",
+  );
   await pool.query(ESQUEMA);
   app.listen(PUERTO, () => {
     console.log(`Back-office escuchando en http://localhost:${PUERTO}`);
