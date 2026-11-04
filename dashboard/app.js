@@ -42,6 +42,7 @@ function crearElemento(etiqueta, atributos = {}) {
  */
 function dibujarBarras(contenedor, pares, opciones = {}) {
   const { etiquetaValor = (valor) => formatearNumero(valor) } = opciones;
+  if (!contenedor) return;
   contenedor.replaceChildren();
 
   const ancho = 520;
@@ -125,6 +126,7 @@ function dibujarBarras(contenedor, pares, opciones = {}) {
 
 function pintarLista(id, pares, { vacio = "Sin datos todavía" } = {}) {
   const lista = $(id);
+  if (!lista) return;
   lista.replaceChildren();
 
   if (!pares.length) {
@@ -149,6 +151,7 @@ function pintarLista(id, pares, { vacio = "Sin datos todavía" } = {}) {
 
 function pintarUltimosLogs(logs) {
   const cuerpo = $("ultimos-logs");
+  if (!cuerpo) return;
   cuerpo.replaceChildren();
 
   const recientes = logs.slice(0, 10);
@@ -194,6 +197,7 @@ function pintarUltimosLogs(logs) {
 
 function pintarAvisoParcial(errores) {
   const aviso = $("aviso-parcial");
+  if (!aviso) return;
 
   if (!errores.length) {
     aviso.hidden = true;
@@ -214,21 +218,27 @@ function pintarAvisoParcial(errores) {
 }
 
 function pintarPie(datos) {
-  $("pie-fuente").textContent = MODO_DEMO
+  const pieFuente = $("pie-fuente");
+  const pieFecha = $("pie-fecha");
+  const pieRegistros = $("pie-registros");
+  const pieModo = $("pie-modo");
+  if (pieFuente) pieFuente.textContent = MODO_DEMO
     ? "demo/datos.json (datos de demostración)"
     : datos.fuente || "—";
-  $("pie-fecha").textContent = formatearFecha(
+  if (pieFecha) pieFecha.textContent = formatearFecha(
     datos.generadoEn || new Date().toISOString(),
   );
-  $("pie-registros").textContent =
+  if (pieRegistros) pieRegistros.textContent =
     `${formatearNumero((datos.pedidos || []).length)} pedidos · ` +
     `${formatearNumero((datos.incidencias || []).length)} incidencias · ` +
     `${formatearNumero((datos.logs || []).length)} eventos · ` +
     `${formatearNumero((datos.decisiones || []).length)} decisiones`;
-  $("pie-modo").textContent = MODO_DEMO
-    ? "Modo demostración: estas cifras NO proceden del back-office."
-    : "Modo real: cifras leídas del back-office desplegado.";
-  $("pie-modo").style.color = MODO_DEMO ? "var(--demo)" : "var(--ok)";
+  if (pieModo) {
+    pieModo.textContent = MODO_DEMO
+      ? "Modo demostración: estas cifras NO proceden del back-office."
+      : "Modo real: cifras leídas del back-office desplegado.";
+    pieModo.style.color = MODO_DEMO ? "var(--demo)" : "var(--ok)";
+  }
 }
 
 function renderizar(datos) {
@@ -336,16 +346,23 @@ function renderizar(datos) {
   pintarAvisoParcial(datos.errores || []);
   pintarPie(datos);
 
-  $("cargando").hidden = true;
-  $("panel-error").hidden = true;
-  $("panel-datos").hidden = false;
+  const cargando = $("cargando");
+  const panelError = $("panel-error");
+  const panelDatos = $("panel-datos");
+  if (cargando) cargando.hidden = true;
+  if (panelError) panelError.hidden = true;
+  if (panelDatos) panelDatos.hidden = false;
 }
 
 function mostrarError(mensaje) {
-  $("cargando").hidden = true;
-  $("panel-datos").hidden = true;
-  $("error-mensaje").textContent = mensaje;
-  $("panel-error").hidden = false;
+  const cargando = $("cargando");
+  const panelDatos = $("panel-datos");
+  const errorMensaje = $("error-mensaje");
+  const panelError = $("panel-error");
+  if (cargando) cargando.hidden = true;
+  if (panelDatos) panelDatos.hidden = true;
+  if (errorMensaje) errorMensaje.textContent = mensaje;
+  if (panelError) panelError.hidden = false;
 }
 
 async function cargar() {
@@ -376,6 +393,7 @@ async function cargar() {
 
     renderizar(datos);
   } catch (error) {
+    console.error("ERROR EN CARGAR/RENDERIZAR:", error);
     mostrarError(
       error instanceof Error ? error.message : "Error desconocido al cargar.",
     );
