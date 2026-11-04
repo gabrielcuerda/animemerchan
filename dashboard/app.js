@@ -9,7 +9,6 @@ import {
   resumenLogs,
   resumenPedidos,
   seriePorDia,
-  tiempoMedioResolucion,
 } from "./metricas.js";
 
 const parametros = new URLSearchParams(window.location.search);
@@ -244,7 +243,6 @@ function renderizar(datos) {
   const incidencias = resumenIncidencias(datos.incidencias);
   const logs = resumenLogs(datos.logs);
   const decisiones = resumenDecisiones(datos.decisiones);
-  const resolucion = tiempoMedioResolucion(datos.resolucion);
 
   // Indicadores
   $("kpi-pedidos").textContent = formatearNumero(pedidos.total);
@@ -288,17 +286,6 @@ function renderizar(datos) {
     latencia === null
       ? "Pendiente: n8n debe registrar duracion_ms"
       : `Media de ${formatearNumero(logs.conDuracion)} ejecuciones`;
-
- const kpiResolucion = $("kpi-resolucion");
-   kpiResolucion.textContent =
-    resolucion === null
-     ? "Sin datos"
-     : `${formatearNumero(Math.round(resolucion / 60000))} min`;
-  kpiResolucion.classList.toggle("kpi-aviso", resolucion === null);
-   $("nota-resolucion").textContent =
-     resolucion === null
-      ? "Pendiente: incidencias sin cerrar"
-      : `Media de ${formatearNumero(datos.resolucion?.cerradas ?? 0)} incidencias`;
 
   // Gráficos
   dibujarBarras(
