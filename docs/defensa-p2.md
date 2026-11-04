@@ -65,13 +65,13 @@ back-office simulado; las capturas del back-office real las aporta la Persona
 
 ## Preguntas probables
 
-| Pregunta | Respuesta corta |
-| --- | --- |
-| ¿Por qué n8n y no un script? | Webhook, ramas, reintentos, ejecuciones visibles y export JSON sin mantener un servidor. |
-| ¿Por qué validas dos veces? | n8n protege la integración; el back-office se protege de llamadas directas. |
-| ¿Cómo evitas duplicados? | Clave primaria + `ON CONFLICT`; n8n detecta el `aviso` y lo marca. |
-| ¿Qué pasa si n8n está caído? | La tienda ya cobró; el error queda en consola y el pedido se puede reenviar. No hay outbox (mejora). |
-| ¿Qué pasa si el back-office está caído? | n8n reintenta 3 veces; luego responde 502/504 y registra el error. |
-| ¿Por qué logs duplicados? | El back-office registra la entidad y n8n la ejecución. Se filtran por `origen`. |
-| ¿Qué falta para producción? | Autenticación, plan de pago o keep-alive, outbox y límites de tasa. |
-| ¿Qué aporta el agente de Telegram? | Es la entrada de `incident.created`; la aprobación humana es de la Persona 3. |
+| Pregunta                                | Respuesta corta                                                                                      |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| ¿Por qué n8n y no un script?            | Webhook, ramas, reintentos, ejecuciones visibles y export JSON sin mantener un servidor.             |
+| ¿Por qué validas dos veces?             | n8n protege la integración; el back-office se protege de llamadas directas.                          |
+| ¿Cómo evitas duplicados?                | Clave primaria + `ON CONFLICT`; n8n detecta el `aviso` y lo marca.                                   |
+| ¿Qué pasa si n8n está caído?            | La tienda ya cobró; el error queda en consola y el pedido se puede reenviar. No hay outbox (mejora). |
+| ¿Qué pasa si el back-office está caído? | n8n reintenta 3 veces; luego responde 502/504 y registra el error.                                   |
+| ¿Por qué logs duplicados?               | El back-office registra la entidad y n8n la ejecución. Se filtran por `origen`.                      |
+| ¿Qué falta para producción?             | Autenticación, plan de pago o keep-alive, outbox y límites de tasa.                                  |
+| ¿Qué aporta el agente de Telegram?      | Es la entrada de `incident.created`; la aprobación humana es de la Persona 3.                        |

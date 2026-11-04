@@ -43,13 +43,13 @@ configurado, el aviso falla y la respuesta sigue su curso.
    tienda: n8n crea sus propias tablas y migraciones).
 2. En Supabase: **Connect → Session pooler**. Copia estos datos:
 
-   | Dato | Ejemplo | Variable en Render |
-   | --- | --- | --- |
-   | Host | `aws-0-eu-west-1.pooler.supabase.com` | `DB_POSTGRESDB_HOST` |
-   | Puerto | `5432` | `DB_POSTGRESDB_PORT` |
-   | Usuario | `postgres.abcdefghijklmnop` | `DB_POSTGRESDB_USER` |
-   | Contraseña | la del proyecto | `DB_POSTGRESDB_PASSWORD` |
-   | Base de datos | `postgres` | `DB_POSTGRESDB_DATABASE` |
+   | Dato          | Ejemplo                               | Variable en Render       |
+   | ------------- | ------------------------------------- | ------------------------ |
+   | Host          | `aws-0-eu-west-1.pooler.supabase.com` | `DB_POSTGRESDB_HOST`     |
+   | Puerto        | `5432`                                | `DB_POSTGRESDB_PORT`     |
+   | Usuario       | `postgres.abcdefghijklmnop`           | `DB_POSTGRESDB_USER`     |
+   | Contraseña    | la del proyecto                       | `DB_POSTGRESDB_PASSWORD` |
+   | Base de datos | `postgres`                            | `DB_POSTGRESDB_DATABASE` |
 
    Usa el **Session pooler** (puerto `5432`), no el Transaction pooler
    (puerto `6543`): n8n abre conexiones persistentes y el pooler transaccional
@@ -84,38 +84,38 @@ la raíz del repo; si quieres usarla, copia el contenido a `/render.yaml`.
 
 Copia [`/.env.example`](./.env.example) y rellena los valores. Las claves:
 
-| Variable | Valor | Por qué |
-| --- | --- | --- |
-| `PORT` | `5678` | Render enruta el tráfico a este puerto. |
-| `N8N_PORT` | `5678` | n8n escucha aquí. Si no coincide con `PORT`, Render da 502. |
-| `N8N_HOST` | `tu-servicio.onrender.com` | Sin `https://`. |
-| `N8N_PROTOCOL` | `https` | Render termina TLS. |
-| `N8N_EDITOR_BASE_URL` | `https://tu-servicio.onrender.com` | Enlaces del editor. |
-| `N8N_WEBHOOK_URL` | `https://tu-servicio.onrender.com/` | **Con barra final.** Si falta, los webhooks apuntan a localhost. En versiones antiguas se llama `WEBHOOK_URL`. |
-| `N8N_PROXY_HOPS` | `1` | Hay un proxy delante (Render). |
-| `N8N_SECURE_COOKIE` | `true` | La cookie de sesión solo viaja por HTTPS. |
-| `N8N_ENCRYPTION_KEY` | cadena aleatoria de 32+ caracteres | **Fija.** Si cambia, se pierden las credenciales cifradas. Genera con `openssl rand -hex 32`. |
-| `GENERIC_TIMEZONE` | `Europe/Madrid` | Fechas del editor. |
-| `TZ` | `Europe/Madrid` | Zona del contenedor. |
-| `DB_TYPE` | `postgresdb` | Usa PostgreSQL, no SQLite. |
-| `DB_POSTGRESDB_HOST` | host del Session pooler | Supabase. |
-| `DB_POSTGRESDB_PORT` | `5432` | Session pooler. |
-| `DB_POSTGRESDB_DATABASE` | `postgres` | Base del proyecto. |
-| `DB_POSTGRESDB_USER` | `postgres.<project-ref>` | Usuario del pooler. |
-| `DB_POSTGRESDB_PASSWORD` | contraseña | Secreta. |
-| `DB_POSTGRESDB_SCHEMA` | `public` | Proyecto dedicado a n8n. |
-| `DB_POSTGRESDB_SSL_ENABLED` | `true` | Supabase exige SSL. |
-| `DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED` | `false` | Certificado del pooler. |
-| `DB_POSTGRESDB_POOL_SIZE` | `2` | El plan Free tiene poca memoria. |
-| `BACKOFFICE_URL` | `https://backoffice-tarea2.onrender.com` | **Sin barra final.** Lo usan los nodos HTTP. |
-| `TELEGRAM_BOT_TOKEN` | token del bot (opcional) | Avisos de error por Telegram. Lo aporta la Persona 3. |
-| `ALERT_TELEGRAM_CHAT_ID` | chat que recibe los avisos (opcional) | Si falta, el aviso falla y el flujo sigue. |
-| `N8N_BLOCK_ENV_ACCESS_IN_NODE` | `false` | El workflow usa `$env.BACKOFFICE_URL`. Si lo pones a `true`, los nodos fallan. |
-| `EXECUTIONS_DATA_PRUNE` | `true` | No llenar la base de datos gratuita. |
-| `EXECUTIONS_DATA_MAX_AGE` | `168` | 7 días de ejecuciones. |
-| `EXECUTIONS_DATA_SAVE_ON_SUCCESS` | `all` | Evidencias de ejecuciones correctas. |
-| `EXECUTIONS_DATA_SAVE_ON_ERROR` | `all` | Evidencias de errores. |
-| `N8N_DIAGNOSTICS_ENABLED` | `false` | Menos ruido y menos llamadas externas. |
+| Variable                                | Valor                                    | Por qué                                                                                                        |
+| --------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `PORT`                                  | `5678`                                   | Render enruta el tráfico a este puerto.                                                                        |
+| `N8N_PORT`                              | `5678`                                   | n8n escucha aquí. Si no coincide con `PORT`, Render da 502.                                                    |
+| `N8N_HOST`                              | `tu-servicio.onrender.com`               | Sin `https://`.                                                                                                |
+| `N8N_PROTOCOL`                          | `https`                                  | Render termina TLS.                                                                                            |
+| `N8N_EDITOR_BASE_URL`                   | `https://tu-servicio.onrender.com`       | Enlaces del editor.                                                                                            |
+| `N8N_WEBHOOK_URL`                       | `https://tu-servicio.onrender.com/`      | **Con barra final.** Si falta, los webhooks apuntan a localhost. En versiones antiguas se llama `WEBHOOK_URL`. |
+| `N8N_PROXY_HOPS`                        | `1`                                      | Hay un proxy delante (Render).                                                                                 |
+| `N8N_SECURE_COOKIE`                     | `true`                                   | La cookie de sesión solo viaja por HTTPS.                                                                      |
+| `N8N_ENCRYPTION_KEY`                    | cadena aleatoria de 32+ caracteres       | **Fija.** Si cambia, se pierden las credenciales cifradas. Genera con `openssl rand -hex 32`.                  |
+| `GENERIC_TIMEZONE`                      | `Europe/Madrid`                          | Fechas del editor.                                                                                             |
+| `TZ`                                    | `Europe/Madrid`                          | Zona del contenedor.                                                                                           |
+| `DB_TYPE`                               | `postgresdb`                             | Usa PostgreSQL, no SQLite.                                                                                     |
+| `DB_POSTGRESDB_HOST`                    | host del Session pooler                  | Supabase.                                                                                                      |
+| `DB_POSTGRESDB_PORT`                    | `5432`                                   | Session pooler.                                                                                                |
+| `DB_POSTGRESDB_DATABASE`                | `postgres`                               | Base del proyecto.                                                                                             |
+| `DB_POSTGRESDB_USER`                    | `postgres.<project-ref>`                 | Usuario del pooler.                                                                                            |
+| `DB_POSTGRESDB_PASSWORD`                | contraseña                               | Secreta.                                                                                                       |
+| `DB_POSTGRESDB_SCHEMA`                  | `public`                                 | Proyecto dedicado a n8n.                                                                                       |
+| `DB_POSTGRESDB_SSL_ENABLED`             | `true`                                   | Supabase exige SSL.                                                                                            |
+| `DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED` | `false`                                  | Certificado del pooler.                                                                                        |
+| `DB_POSTGRESDB_POOL_SIZE`               | `2`                                      | El plan Free tiene poca memoria.                                                                               |
+| `BACKOFFICE_URL`                        | `https://backoffice-tarea2.onrender.com` | **Sin barra final.** Lo usan los nodos HTTP.                                                                   |
+| `TELEGRAM_BOT_TOKEN`                    | token del bot (opcional)                 | Avisos de error por Telegram. Lo aporta la Persona 3.                                                          |
+| `ALERT_TELEGRAM_CHAT_ID`                | chat que recibe los avisos (opcional)    | Si falta, el aviso falla y el flujo sigue.                                                                     |
+| `N8N_BLOCK_ENV_ACCESS_IN_NODE`          | `false`                                  | El workflow usa `$env.BACKOFFICE_URL`. Si lo pones a `true`, los nodos fallan.                                 |
+| `EXECUTIONS_DATA_PRUNE`                 | `true`                                   | No llenar la base de datos gratuita.                                                                           |
+| `EXECUTIONS_DATA_MAX_AGE`               | `168`                                    | 7 días de ejecuciones.                                                                                         |
+| `EXECUTIONS_DATA_SAVE_ON_SUCCESS`       | `all`                                    | Evidencias de ejecuciones correctas.                                                                           |
+| `EXECUTIONS_DATA_SAVE_ON_ERROR`         | `all`                                    | Evidencias de errores.                                                                                         |
+| `N8N_DIAGNOSTICS_ENABLED`               | `false`                                  | Menos ruido y menos llamadas externas.                                                                         |
 
 > **No subas el `.env` real.** El `.env.example` no lleva secretos. En Render
 > las variables se pegan en el panel, no en el repositorio.
@@ -187,7 +187,7 @@ funciona:
    https://tu-servicio.onrender.com/webhook/integracion-tarea2
    ```
 
-   La URL de prueba (botón *Listen for test event*) es:
+   La URL de prueba (botón _Listen for test event_) es:
 
    ```text
    https://tu-servicio.onrender.com/webhook-test/integracion-tarea2
@@ -324,9 +324,9 @@ hace ping a n8n y al back-office cada 10 minutos.
 
 Configura en GitHub → **Settings → Variables → Actions**:
 
-| Variable | Valor |
-| --- | --- |
-| `N8N_URL` | `https://tu-servicio.onrender.com` |
+| Variable         | Valor                                    |
+| ---------------- | ---------------------------------------- |
+| `N8N_URL`        | `https://tu-servicio.onrender.com`       |
 | `BACKOFFICE_URL` | `https://backoffice-tarea2.onrender.com` |
 
 También puedes usar un cron externo (cron-job.org) si prefieres no depender de
@@ -347,14 +347,14 @@ Guarda las capturas en [`../docs/evidencias/`](../docs/evidencias/README.md):
 
 ## 9. Problemas típicos
 
-| Síntoma | Causa | Solución |
-| --- | --- | --- |
-| `404` al llamar al webhook | Workflow no publicado/activo o ruta mal | Publica/activa el workflow y usa `/webhook/`, no `/webhook-test/`. |
-| `$env.BACKOFFICE_URL` vacío | `N8N_BLOCK_ENV_ACCESS_IN_NODE=true` | Ponlo a `false` y reinicia. |
-| `502` en Render | n8n escucha en otro puerto | `PORT=5678` y `N8N_PORT=5678`. |
-| Error de conexión a Supabase | Pooler equivocado o SSL | Usa Session pooler (5432), `DB_POSTGRESDB_SSL_ENABLED=true` y `..._REJECT_UNAUTHORIZED=false`. |
-| Las credenciales desaparecen al reiniciar | `N8N_ENCRYPTION_KEY` cambia | Fija la clave en Render y no la regeneres. |
-| El primer evento tarda 50 s | Render Free dormido | Keep-alive cada 10 min. |
-| El pedido se duplica | No debería: el back-office usa `ON CONFLICT` | Revisa que el `pedido_id` sea el mismo; si cambia, son pedidos distintos. |
-| El nodo Code falla | Task runners desactivados en una imagen antigua | En n8n 2.x ya vienen activos; si usas una imagen antigua, `N8N_RUNNERS_ENABLED=true`. |
-| Los logs no aparecen en el dashboard | n8n no llegó a `POST /logs` | Mira la ejecución de n8n; el nodo de log no debe bloquear la respuesta. |
+| Síntoma                                   | Causa                                           | Solución                                                                                       |
+| ----------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `404` al llamar al webhook                | Workflow no publicado/activo o ruta mal         | Publica/activa el workflow y usa `/webhook/`, no `/webhook-test/`.                             |
+| `$env.BACKOFFICE_URL` vacío               | `N8N_BLOCK_ENV_ACCESS_IN_NODE=true`             | Ponlo a `false` y reinicia.                                                                    |
+| `502` en Render                           | n8n escucha en otro puerto                      | `PORT=5678` y `N8N_PORT=5678`.                                                                 |
+| Error de conexión a Supabase              | Pooler equivocado o SSL                         | Usa Session pooler (5432), `DB_POSTGRESDB_SSL_ENABLED=true` y `..._REJECT_UNAUTHORIZED=false`. |
+| Las credenciales desaparecen al reiniciar | `N8N_ENCRYPTION_KEY` cambia                     | Fija la clave en Render y no la regeneres.                                                     |
+| El primer evento tarda 50 s               | Render Free dormido                             | Keep-alive cada 10 min.                                                                        |
+| El pedido se duplica                      | No debería: el back-office usa `ON CONFLICT`    | Revisa que el `pedido_id` sea el mismo; si cambia, son pedidos distintos.                      |
+| El nodo Code falla                        | Task runners desactivados en una imagen antigua | En n8n 2.x ya vienen activos; si usas una imagen antigua, `N8N_RUNNERS_ENABLED=true`.          |
+| Los logs no aparecen en el dashboard      | n8n no llegó a `POST /logs`                     | Mira la ejecución de n8n; el nodo de log no debe bloquear la respuesta.                        |

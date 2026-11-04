@@ -7,7 +7,5 @@
   "moneda": "EUR",
   "estado": "creado",
   "fecha": "2026-10-29T10:00:00Z",
-  "lineas": [
-    { "producto": "Camiseta Eren", "cantidad": 2, "precio": 129.0 }
-  ]
+  "lineas": [{ "producto": "Camiseta Eren", "cantidad": 2, "precio": 129.0 }]
 }

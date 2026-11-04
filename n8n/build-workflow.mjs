@@ -428,8 +428,13 @@ function nodo(nombre, tipo, version, posicion, parametros, extra = {}) {
 
 function conectar(origen, destino, salida = 0) {
   if (!conexiones[origen]) conexiones[origen] = { main: [] };
-  while (conexiones[origen].main.length <= salida) conexiones[origen].main.push([]);
-  conexiones[origen].main[salida].push({ node: destino, type: "main", index: 0 });
+  while (conexiones[origen].main.length <= salida)
+    conexiones[origen].main.push([]);
+  conexiones[origen].main[salida].push({
+    node: destino,
+    type: "main",
+    index: 0,
+  });
 }
 
 function http(nombre, posicion, metodo, ruta, cuerpo, extra = {}) {
@@ -478,22 +483,16 @@ function log(nombre, posicion, origen) {
 }
 
 function responder(nombre, posicion, origen) {
-  return nodo(
-    nombre,
-    "n8n-nodes-base.respondToWebhook",
-    1.5,
-    posicion,
-    {
-      respondWith: "json",
-      responseBody: "={{ $('" + origen + "').item.json.respuesta }}",
-      options: {
-        responseCode: "={{ Number($('" + origen + "').item.json.http_status) }}",
-        responseHeaders: {
-          entries: [{ name: "Content-Type", value: "application/json" }],
-        },
+  return nodo(nombre, "n8n-nodes-base.respondToWebhook", 1.5, posicion, {
+    respondWith: "json",
+    responseBody: "={{ $('" + origen + "').item.json.respuesta }}",
+    options: {
+      responseCode: "={{ Number($('" + origen + "').item.json.http_status) }}",
+      responseHeaders: {
+        entries: [{ name: "Content-Type", value: "application/json" }],
       },
     },
-  );
+  });
 }
 
 /**
@@ -677,12 +676,19 @@ alerta("Avisar Telegram pedido", [680, 20], "Error pedido");
 responder("Responder error pedido", [820, 20], "Error pedido");
 
 // Escenario 2: cambio de estado
-http("HTTP cambiar estado", [60, 220], "PATCH", "/pedidos/{{ $json.entidad_id }}/estado", '{ "estado": $json.payload.estado }', {
-  onError: "continueErrorOutput",
-  retryOnFail: true,
-  maxTries: 3,
-  waitBetweenTries: 2000,
-});
+http(
+  "HTTP cambiar estado",
+  [60, 220],
+  "PATCH",
+  "/pedidos/{{ $json.entidad_id }}/estado",
+  '{ "estado": $json.payload.estado }',
+  {
+    onError: "continueErrorOutput",
+    retryOnFail: true,
+    maxTries: 3,
+    waitBetweenTries: 2000,
+  },
+);
 nodo("Evaluar estado", "n8n-nodes-base.code", 2, [300, 220], {
   jsCode: evaluarEstado,
 });
@@ -697,7 +703,13 @@ alerta("Avisar Telegram estado", [680, 360], "Error estado");
 responder("Responder error estado", [820, 360], "Error estado");
 
 // Escenario 3: incidencia postventa (la envía el bot de Telegram de P3)
-http("HTTP crear incidencia", [60, 560], "POST", "/incidencias", "$json.payload");
+http(
+  "HTTP crear incidencia",
+  [60, 560],
+  "POST",
+  "/incidencias",
+  "$json.payload",
+);
 nodo("Evaluar incidencia", "n8n-nodes-base.code", 2, [300, 560], {
   jsCode: evaluarIncidencia,
 });
@@ -841,4 +853,9 @@ const salida = new URL("./workflow-integracion.json", import.meta.url);
 writeFileSync(salida, JSON.stringify(workflow, null, 2) + "\n", "utf8");
 
 console.log("Workflow generado: " + salida.pathname);
-console.log("Nodos: " + workflow.nodes.length + " · Conexiones: " + Object.keys(workflow.connections).length);
+console.log(
+  "Nodos: " +
+    workflow.nodes.length +
+    " · Conexiones: " +
+    Object.keys(workflow.connections).length,
+);
