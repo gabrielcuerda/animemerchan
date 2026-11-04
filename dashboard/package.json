@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Cuadro de mando operativo de la Tarea 2 (SIE). Consume el back-office desplegado.",
   "scripts": {
-    "dev": "vercel dev",
-    "test": "node --test test/"
+    "dev": "node server.js",
+    "start": "node server.js",
+    "test": "node --test \"test/*.mjs\""
   }
 }
